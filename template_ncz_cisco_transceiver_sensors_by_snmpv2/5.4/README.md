@@ -20,6 +20,8 @@ Where possible, the template will extract thresholds for each sensor using **ent
 
 ## Known issues
 
+Obviously sensor values will only be shown from transceivers with capable DOM modules. If the values show up in `show interface transceiver` then they should be obtainable from the **entSensorValues** table.
+
 **entSensorPrecison** is required to interpret values obtained from the **entSensorValues** table, I have implemented this for Voltage and Temperature sensors where I have found the precision to vary across platforms, but not for Bias Current or TX/RX power as so far these appear to have consistent precision. You will note a raw value is obtained, as well as the precison factor before using them to calculate the real sensor value in V or °C.
 
 For Voltage and Temperature, the threshold values, where they are obtained need to be adjusted by **entSensorPrecision** before they are compared to a sensor value, as they are stored in the raw format as obtained from the device. 
