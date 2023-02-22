@@ -1,0 +1,2347 @@
+zabbix_export:
+  version: '5.4'
+  date: '2023-02-22T06:07:57Z'
+  groups:
+    -
+      uuid: 36bff6c29af64692839d077febfc7079
+      name: 'Templates/Network devices'
+  templates:
+    -
+      uuid: 51c249eea11145c3a8b995f877fe9426
+      template: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+      name: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+      description: |
+        Template for monitoring transceiver sensors in Cisco IOS network devices using ENTITY-MIB and CISCO-ENTITY-SENSOR
+        
+        Tested with Zabbix 5.4, assorted Cisco Catalyst switches IOS 12.2, 15.0, 15.2 IOSXE 17.3
+      groups:
+        -
+          name: 'Templates/Network devices'
+      discovery_rules:
+        -
+          uuid: 02f7f2ff740c40e8b5243c3d2964831b
+          name: Transceivers
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.2.1.47.1.1.1.1.2,{#SENSORTYPE},.1.3.6.1.2.1.47.1.1.1.1.5,{#IFALIAS},.1.3.6.1.2.1.47.1.1.1.1.14,{#FRU},.1.3.6.1.2.1.47.1.1.1.1.16]'
+          key: snmp.discoverysensors
+          delay: 30m
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#FRU}'
+                value: '1'
+                formulaid: A
+              -
+                macro: '{#SENSORTYPE}'
+                value: '10'
+                formulaid: B
+          item_prototypes:
+            -
+              uuid: f61aaf2d62c846b6bcf0aa3719eab403
+              name: 'Transceiver {#SNMPVALUE} #{#SNMPINDEX}: Model'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.47.1.1.1.1.13.{#SNMPINDEX}'
+              key: 'entPhysicalModelName[{#SNMPINDEX}]'
+              delay: 1h
+              history: 7d
+              trends: '0'
+              value_type: TEXT
+              tags:
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#SNMPINDEX}'
+            -
+              uuid: 532d0f8b72264108be7883542b982586
+              name: 'Transceiver {#SNMPVALUE} #{#SNMPINDEX}: Serial'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.47.1.1.1.1.11.{#SNMPINDEX}'
+              key: 'entPhysicalSerialNum[{#SNMPINDEX}]'
+              delay: 1h
+              history: 7d
+              trends: '0'
+              value_type: TEXT
+              tags:
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#SNMPINDEX}'
+              trigger_prototypes:
+                -
+                  uuid: 48eb2179d2ec4e4c9e35525b93d9ff53
+                  expression: '(last(/NCZ Cisco Transceiver Sensors by SNMPv2/entPhysicalSerialNum[{#SNMPINDEX}],#1)<>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entPhysicalSerialNum[{#SNMPINDEX}],#2))=1 and length(last(/NCZ Cisco Transceiver Sensors by SNMPv2/entPhysicalSerialNum[{#SNMPINDEX}]))>0'
+                  recovery_mode: NONE
+                  name: 'Transceiver {#SNMPVALUE} #{#SNMPINDEX}: Has been replaced'
+                  priority: INFO
+                  description: |
+                    Transceiver serial number has changed. 
+                    Close this problem manually.
+                  manual_close: 'YES'
+            -
+              uuid: 1363652d10694215b3754e78ecbee384
+              name: 'Transceiver {#SNMPVALUE} #{#SNMPINDEX}: Link Status'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.8.{#IFALIAS}'
+              key: 'entSensorLinkStatus[{#SNMPINDEX}]'
+              delay: 10m
+              history: 7d
+              trends: '0'
+              description: |
+                MIB: IF-MIB
+                The current operational state of the interface.
+                - The testing(3) state indicates that no operational packet scan be passed
+                - If ifAdminStatus is down(2) then ifOperStatus should be down(2)
+                - If ifAdminStatus is changed to up(1) then ifOperStatus should change to up(1) if the interface is ready to transmit and receive network traffic
+                - It should change todormant(5) if the interface is waiting for external actions (such as a serial line waiting for an incoming connection)
+                - It should remain in the down(2) state if and only if there is a fault that prevents it from going to the up(1) state
+                - It should remain in the notPresent(6) state if the interface has missing(typically, hardware) components.
+              valuemap:
+                name: entSensorLinkStatus
+              tags:
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#SNMPINDEX}'
+        -
+          uuid: 082ae9c5bf1e447daf812f0516fef46d
+          name: 'Current Sensors'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.2.1.47.1.1.1.1.2,{#CONTAINER},.1.3.6.1.2.1.47.1.1.1.1.4,{#SENSORTYPE},.1.3.6.1.2.1.47.1.1.1.1.5,{#IFALIAS},.1.3.6.1.2.1.47.1.1.1.1.14]'
+          key: snmp.discoverysensors.current
+          delay: 30m
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SNMPVALUE}'
+                value: 'Bias Current'
+                formulaid: B
+              -
+                macro: '{#SENSORTYPE}'
+                value: '8'
+                formulaid: A
+          item_prototypes:
+            -
+              uuid: 80edf4b965c44113982d8b9aa67b8250
+              name: 'Transceiver {#SNMPVALUE}: Sensor Status'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.1.1.1.5.{#SNMPINDEX}'
+              key: 'entSensorStatus.current[{#SNMPINDEX}]'
+              delay: 30m
+              history: 7d
+              trends: '0'
+              valuemap:
+                name: entSensorStatus
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: 'Bias Current'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: ffa4acb6da0341bbb53f09ff67f9a44c
+              name: 'Transceiver {#SNMPVALUE}: High Alert Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.1'
+              key: 'entSensorThresholdValue.current.1[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              units: A
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.0001'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: 'Bias Current'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: 5bc4a1ade0bd44c494d369595f560b01
+              name: 'Transceiver {#SNMPVALUE}: High Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.2'
+              key: 'entSensorThresholdValue.current.2[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              units: A
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.0001'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: 'Bias Current'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: 292ee71f429c4bef8114c5d4a74f892d
+              name: 'Transceiver {#SNMPVALUE}: Value'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.1.1.1.4.{#SNMPINDEX}'
+              key: 'entSensorValue.current[{#SNMPINDEX}]'
+              delay: 10m
+              history: 30d
+              trends: 180d
+              value_type: FLOAT
+              units: A
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.0001'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: 'Bias Current'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+          trigger_prototypes:
+            -
+              uuid: 0c57e7a22d36412ba79f68844c058004
+              expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.current[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.current.1[{#SNMPINDEX}])'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.current[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.current.1[{#SNMPINDEX}])'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Threshold'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              description: 'High bias current is an indicator of a faulty or aging transceiver'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: 'Bias Current'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: 8222486a2a844188af911ed3b82ac95f
+              expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.current[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.current.2[{#SNMPINDEX}])'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.current[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.current.2[{#SNMPINDEX}])'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Warn Threshold'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'High bias current is an indicator of a faulty or aging transceiver'
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Threshold'
+                  expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.current[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.current.1[{#SNMPINDEX}])'
+                  recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.current[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.current.1[{#SNMPINDEX}])'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: 'Bias Current'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: 5b89e7a5c31e45998ee8f48d5affd1e5
+              expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.current[{#SNMPINDEX}])=1 and last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.current[{#SNMPINDEX}])<=0'
+              name: 'Transceiver {#SNMPVALUE} is Zero'
+              opdata: '{ITEM.LASTVALUE2}'
+              priority: INFO
+              description: 'This likely indicates a faulty transceiver or invalid DOM'
+              manual_close: 'YES'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: 'Bias Current'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+          graph_prototypes:
+            -
+              uuid: 5b10770403ab4b68aeb6b267f81ece04
+              name: 'Transceiver Bias Current {#SNMPVALUE}'
+              ymin_type_1: FIXED
+              graph_items:
+                -
+                  sortorder: '1'
+                  drawtype: DASHED_LINE
+                  color: FF4000
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.current.1[{#SNMPINDEX}]'
+                -
+                  sortorder: '2'
+                  drawtype: DASHED_LINE
+                  color: FF8000
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.current.2[{#SNMPINDEX}]'
+                -
+                  sortorder: '3'
+                  drawtype: BOLD_LINE
+                  color: BF00FF
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorValue.current[{#SNMPINDEX}]'
+        -
+          uuid: 46650b518290483fa77c5e8f4a147ec9
+          name: 'RX Sensors'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.2.1.47.1.1.1.1.2,{#CONTAINER},.1.3.6.1.2.1.47.1.1.1.1.4,{#SENSORTYPE},.1.3.6.1.2.1.47.1.1.1.1.5,{#IFALIAS},.1.3.6.1.2.1.47.1.1.1.1.14]'
+          key: snmp.discoverysensors.rx
+          delay: 30m
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SNMPVALUE}'
+                value: 'Receive Power'
+                formulaid: B
+              -
+                macro: '{#SENSORTYPE}'
+                value: '8'
+                formulaid: A
+          item_prototypes:
+            -
+              uuid: 748735f4d0644e5186012ded753a0e9f
+              name: 'Transceiver {#SNMPVALUE}: Link Status'
+              type: CALCULATED
+              key: 'entSensorLinkStatus.RX[{#SNMPINDEX}]'
+              delay: 10m
+              history: 7d
+              trends: '0'
+              params: 'last(//entSensorLinkStatus[{#CONTAINER}])'
+              description: |
+                MIB: IF-MIB
+                The current operational state of the interface.
+                - The testing(3) state indicates that no operational packet scan be passed
+                - If ifAdminStatus is down(2) then ifOperStatus should be down(2)
+                - If ifAdminStatus is changed to up(1) then ifOperStatus should change to up(1) if the interface is ready to transmit and receive network traffic
+                - It should change todormant(5) if the interface is waiting for external actions (such as a serial line waiting for an incoming connection)
+                - It should remain in the down(2) state if and only if there is a fault that prevents it from going to the up(1) state
+                - It should remain in the notPresent(6) state if the interface has missing(typically, hardware) components.
+              valuemap:
+                name: entSensorLinkStatus
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: 84a2fe32611b40bba31ee836e90dc268
+              name: 'Transceiver {#SNMPVALUE}: Sensor Status'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.1.1.1.5.{#SNMPINDEX}'
+              key: 'entSensorStatus.RX[{#SNMPINDEX}]'
+              delay: 30m
+              history: 7d
+              trends: '0'
+              valuemap:
+                name: entSensorStatus
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+              trigger_prototypes:
+                -
+                  uuid: 5bcbbba78b804176ab1c33cc9bc797ca
+                  expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.RX[{#SNMPINDEX}])=3'
+                  name: 'Transceiver RX {#SNMPVALUE} is nonoperational'
+                  priority: WARNING
+                  manual_close: 'YES'
+                  tags:
+                    -
+                      tag: Application
+                      value: Sensors
+                    -
+                      tag: Sensor-Type
+                      value: Transceiver
+                -
+                  uuid: ac850e070bc84db6be030cc8962af898
+                  expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.RX[{#SNMPINDEX}])=2'
+                  name: 'Transceiver RX {#SNMPVALUE} is unavailable'
+                  priority: INFO
+                  manual_close: 'YES'
+                  tags:
+                    -
+                      tag: Application
+                      value: Sensors
+                    -
+                      tag: Sensor-Type
+                      value: Transceiver
+            -
+              uuid: 0694ed41a3264958bcff44842ec39eaa
+              name: 'Transceiver {#SNMPVALUE}: High Alarm Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.1'
+              key: 'entSensorThresholdValue.RX.1[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              units: dBm
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '{$RX_HIGH_ALARM}'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: d2f76019e5304f11bf39cb6211f60ecd
+              name: 'Transceiver {#SNMPVALUE}: High Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.2'
+              key: 'entSensorThresholdValue.RX.2[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              units: dBm
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '{$RX_HIGH_WARN}'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: b386445b965e4765b0f6000a6b1fc132
+              name: 'Transceiver {#SNMPVALUE}: Low Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.3'
+              key: 'entSensorThresholdValue.RX.3[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              units: dBm
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '{$RX_LOW_WARN}'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: 0c318ad7c16d4ecba5bb849677a13308
+              name: 'Transceiver {#SNMPVALUE}: Low Alarm Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.4'
+              key: 'entSensorThresholdValue.RX.4[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              units: dBm
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '{$RX_LOW_ALARM}'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: d3c04fdc92614feb8761e4243c41c243
+              name: 'Transceiver {#SNMPVALUE}: Type'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.47.1.1.1.1.2.{#CONTAINER}'
+              key: 'entSensorType.RX[{#SNMPINDEX}]'
+              delay: 30m
+              history: 7d
+              trends: '0'
+              value_type: TEXT
+              valuemap:
+                name: entSensorStatus
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: 5f109593ffd64fddaf997e42c23fd721
+              name: 'Transceiver {#SNMPVALUE}: Value'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.1.1.1.4.{#SNMPINDEX}'
+              key: 'entSensorValue.RX[{#SNMPINDEX}]'
+              delay: 10m
+              history: 30d
+              trends: 180d
+              value_type: FLOAT
+              units: dBm
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+          trigger_prototypes:
+            -
+              uuid: 30816427c1e64e6db82acbe20e7f2ccb
+              expression: '((max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)-min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5))>{$RX_CHANGE_ALARM}) and (max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}],#5)-min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}],#5)=0)'
+              name: 'Transceiver RX {#SNMPVALUE} changed more than {$RX_CHANGE_ALARM}dB'
+              priority: AVERAGE
+              manual_close: 'YES'
+              dependencies:
+                -
+                  name: 'Transceiver RX {#SNMPVALUE} is nonoperational'
+                  expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.RX[{#SNMPINDEX}])=3'
+                -
+                  name: 'Transceiver RX {#SNMPVALUE} is unavailable'
+                  expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.RX[{#SNMPINDEX}])=2'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: d35162622daf4d30816e64f440e8dde2
+              expression: '(max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)-min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5))>{$RX_CHANGE_WARN} and (max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}],#5)-min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}],#5)=0)'
+              name: 'Transceiver RX {#SNMPVALUE} changed more than {$RX_CHANGE_WARN}dB'
+              priority: WARNING
+              manual_close: 'YES'
+              dependencies:
+                -
+                  name: 'Transceiver RX {#SNMPVALUE} changed more than {$RX_CHANGE_ALARM}dB'
+                  expression: '((max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)-min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5))>{$RX_CHANGE_ALARM}) and (max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}],#5)-min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}],#5)=0)'
+                -
+                  name: 'Transceiver RX {#SNMPVALUE} is nonoperational'
+                  expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.RX[{#SNMPINDEX}])=3'
+                -
+                  name: 'Transceiver RX {#SNMPVALUE} is unavailable'
+                  expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.RX[{#SNMPINDEX}])=2'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: a27d571f25074ddaaadf19c6b8ce4ae7
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)>{$RX_HIGH_ALARM} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.1[{#SNMPINDEX}],1h)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)<{$RX_HIGH_ALARM}'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Estimate'
+              priority: AVERAGE
+              description: 'A calibrated threshold could not be read from the device, however the level is out of range for a typical transceiver'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transciever
+            -
+              uuid: 23784fa0d3294edbb17c238b2aba6a69
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.1[{#SNMPINDEX}])'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.1[{#SNMPINDEX}])'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Threshold'
+              opdata: '{ITEM.LASTVALUE1} (Threshold {ITEM.LASTVALUE2})'
+              priority: AVERAGE
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transciever
+            -
+              uuid: 02e8c0e390d24212bfb0602d1418b9e1
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)>{$RX_HIGH_WARN} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.2[{#SNMPINDEX}],1h)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)<{$RX_HIGH_WARN}'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Warn Estimate'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'A calibrated threshold could not be read from the device, however the level is out of range for a typical transceiver'
+              manual_close: 'YES'
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Estimate'
+                  expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)>{$RX_HIGH_ALARM} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.1[{#SNMPINDEX}],1h)'
+                  recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)<{$RX_HIGH_ALARM}'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transciever
+            -
+              uuid: 519ebc6a57e8448c9bb0dbf21daab3cd
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.2[{#SNMPINDEX}])'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.2[{#SNMPINDEX}])'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Warn Threshold'
+              opdata: '{ITEM.LASTVALUE1} (Threshold {ITEM.LASTVALUE2})'
+              priority: WARNING
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Threshold'
+                  expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.1[{#SNMPINDEX}])'
+                  recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.1[{#SNMPINDEX}])'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transciever
+            -
+              uuid: aa57f9b45340406bb6967280b223b969
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)<{$RX_LOW_ALARM} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.4[{#SNMPINDEX}],1h)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)>{$RX_LOW_ALARM}'
+              name: 'Transceiver {#SNMPVALUE}: Value below Low Alarm Estimate'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              description: 'A calibrated threshold could not be read from the device, however the level is out of range for a typical transceiver'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transciever
+            -
+              uuid: b7e20150f4384044ad8e7cca947470ee
+              expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.4[{#SNMPINDEX}]) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}])=1)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.4[{#SNMPINDEX}]) or (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}])<>1)'
+              name: 'Transceiver {#SNMPVALUE}: Value below Low Alarm Threshold'
+              opdata: '{ITEM.LASTVALUE1} (Threshold {ITEM.LASTVALUE2})'
+              priority: AVERAGE
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transciever
+            -
+              uuid: cc69ec5ae4c548adb9b61a886fcacb17
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)<{$RX_LOW_WARN} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.3[{#SNMPINDEX}],1h) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}])=1)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)>{$RX_LOW_WARN} or  (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}])<>1)'
+              name: 'Transceiver {#SNMPVALUE}: Value below Low Warn Estimate'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'A calibrated threshold could not be read from the device, however the level is out of range for a typical transceiver'
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value below Low Alarm Estimate'
+                  expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)<{$RX_LOW_ALARM} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.4[{#SNMPINDEX}],1h)'
+                  recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)>{$RX_LOW_ALARM}'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transciever
+            -
+              uuid: bb5ef8cb372b4a488d94f72a7d08d574
+              expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.3[{#SNMPINDEX}]) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}])=1)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.3[{#SNMPINDEX}]) or (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}])<>1)'
+              name: 'Transceiver {#SNMPVALUE}: Value below Low Warn Threshold'
+              opdata: '{ITEM.LASTVALUE1} (Threshold {ITEM.LASTVALUE2})'
+              priority: WARNING
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value below Low Alarm Threshold'
+                  expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.4[{#SNMPINDEX}]) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}])=1)'
+                  recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.4[{#SNMPINDEX}]) or (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}])<>1)'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transciever
+          graph_prototypes:
+            -
+              uuid: 98ed6849f18c49ee96770a2d0651ad6e
+              name: 'Transceiver RX {#SNMPVALUE}'
+              graph_items:
+                -
+                  sortorder: '1'
+                  drawtype: DASHED_LINE
+                  color: FF4000
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.RX.1[{#SNMPINDEX}]'
+                -
+                  sortorder: '2'
+                  drawtype: DASHED_LINE
+                  color: FF8000
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.RX.2[{#SNMPINDEX}]'
+                -
+                  sortorder: '3'
+                  drawtype: DASHED_LINE
+                  color: FF4000
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.RX.4[{#SNMPINDEX}]'
+                -
+                  sortorder: '4'
+                  drawtype: DASHED_LINE
+                  color: FF8000
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.RX.3[{#SNMPINDEX}]'
+                -
+                  sortorder: '5'
+                  drawtype: BOLD_LINE
+                  color: 5CCD18
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorValue.RX[{#SNMPINDEX}]'
+        -
+          uuid: add942bc14d545f5a8ccf7bcb7701d56
+          name: 'Temperature Sensors'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.2.1.47.1.1.1.1.2,{#CONTAINER},.1.3.6.1.2.1.47.1.1.1.1.4,{#SENSORTYPE},.1.3.6.1.2.1.47.1.1.1.1.5,{#IFALIAS},.1.3.6.1.2.1.47.1.1.1.1.14]'
+          key: snmp.discoverysensors.temp
+          delay: 30m
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SNMPVALUE}'
+                value: 'Module Temperature'
+                formulaid: B
+              -
+                macro: '{#SENSORTYPE}'
+                value: '8'
+                formulaid: A
+          item_prototypes:
+            -
+              uuid: faa793e8f0a74aa58bb6229476d94c4a
+              name: 'Transceiver {#SNMPVALUE}: Sensor Precision'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.9.9.91.1.1.1.1.3.{#SNMPINDEX}'
+              key: 'entSensorPrecision.temp[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              preprocessing:
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - 'return (Math.pow(10, -value))'
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Temperature
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: b128f74eb34c4b8ebcfcdd0810c50f48
+              name: 'Transceiver {#SNMPVALUE}: Raw'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.1.1.1.4.{#SNMPINDEX}'
+              key: 'entSensorRaw.temp[{#SNMPINDEX}]'
+              delay: 10m
+              history: 1d
+              trends: '0'
+              description: 'This is the raw value as received from snmp and must be adjusted by sensorPrecision to interpret'
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Temperature
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: 337aa852d3d24db996f1762ceafeae16
+              name: 'Transceiver {#SNMPVALUE}: Sensor Status'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.1.1.1.5.{#SNMPINDEX}'
+              key: 'entSensorStatus.temp[{#SNMPINDEX}]'
+              delay: 30m
+              history: 7d
+              trends: '0'
+              valuemap:
+                name: entSensorStatus
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Temperature
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+              trigger_prototypes:
+                -
+                  uuid: 24d102cc314647c7af3c058297e4472c
+                  expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.temp[{#SNMPINDEX}])=3'
+                  name: 'Transceiver {#SNMPVALUE} is nonoperational'
+                  priority: WARNING
+                  manual_close: 'YES'
+                  tags:
+                    -
+                      tag: Application
+                      value: Sensors
+                    -
+                      tag: Sensor-Type
+                      value: Transceiver
+                    -
+                      tag: Sensot-Type
+                      value: Temperature
+                -
+                  uuid: 779e9bac2c484d45b778871d34bb7460
+                  expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.temp[{#SNMPINDEX}])=2'
+                  name: 'Transceiver {#SNMPVALUE} is unavailable'
+                  priority: INFO
+                  manual_close: 'YES'
+                  tags:
+                    -
+                      tag: Application
+                      value: Sensors
+                    -
+                      tag: Sensor-Type
+                      value: Transceiver
+                    -
+                      tag: Sensot-Type
+                      value: Temperature
+            -
+              uuid: 49ad27600cb342ee9daa178ef37e652c
+              name: 'Transceiver {#SNMPVALUE}: High Alarm Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.1'
+              key: 'entSensorThresholdValue.temp.1[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Temperature
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: 2e03977bd743406fa9771eb22c8664f3
+              name: 'Transceiver {#SNMPVALUE}: High Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.2'
+              key: 'entSensorThresholdValue.temp.2[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Temperature
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: 7100f433dd494342a88f4d4fbd9a67e6
+              name: 'Transceiver {#SNMPVALUE}: Low Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.3'
+              key: 'entSensorThresholdValue.temp.3[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Temperature
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: 7d18bda8455d45ed88f574524e01694e
+              name: 'Transceiver {#SNMPVALUE}: Low Alarm Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.4'
+              key: 'entSensorThresholdValue.temp.4[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Temperature
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: eaf3658bbc4a4735b3cebc993cdfe129
+              name: 'Transceiver {#SNMPVALUE}: Value'
+              type: CALCULATED
+              key: 'entSensorValue.temp[{#SNMPINDEX}]'
+              delay: 10m
+              history: 30d
+              trends: 400d
+              value_type: FLOAT
+              units: °C
+              params: 'last(//entSensorPrecision.temp[{#SNMPINDEX}])*last(//entSensorRaw.temp[{#SNMPINDEX}])'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Temperature
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+          trigger_prototypes:
+            -
+              uuid: 635f5a24959548b390153afe3c600ff9
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)>{$TRANSTEMP_HIGH_ALARM} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.1[{#SNMPINDEX}],1h)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)<{$TRANSTEMP_HIGH_ALARM}'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Estimate'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              description: 'A calibrated threshold could not be read from the device, however the level is out of range for a typical transceiver'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensot-Type
+                  value: Temperature
+            -
+              uuid: 8040de9b3d094a038de586591cd2c077
+              expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.1[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.temp[{#SNMPINDEX}])'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.1[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.temp[{#SNMPINDEX}])'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Threshold'
+              opdata: '{ITEM.LASTVALUE1} (Threshold {ITEM.LASTVALUE2})'
+              priority: AVERAGE
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensot-Type
+                  value: Temperature
+            -
+              uuid: ea8fc04c65cb4ed38d945270ce224f22
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)>{$TRANSTEMP_HIGH_WARN} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.2[{#SNMPINDEX}],1h)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)<{$TRANSTEMP_HIGH_WARN}'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Warn Estimate'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'A calibrated threshold could not be read from the device, however the level is out of range for a typical transceiver'
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Estimate'
+                  expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)>{$TRANSTEMP_HIGH_ALARM} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.1[{#SNMPINDEX}],1h)'
+                  recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)<{$TRANSTEMP_HIGH_ALARM}'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensot-Type
+                  value: Temperature
+            -
+              uuid: b35d4b39d68946cbba2a94edbbb80eb6
+              expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.2[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.temp[{#SNMPINDEX}])'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.2[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.temp[{#SNMPINDEX}])'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Warn Threshold'
+              opdata: '{ITEM.LASTVALUE1} (Threshold {ITEM.LASTVALUE2})'
+              priority: WARNING
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Threshold'
+                  expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.1[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.temp[{#SNMPINDEX}])'
+                  recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.1[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.temp[{#SNMPINDEX}])'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensot-Type
+                  value: Temperature
+            -
+              uuid: e7c0430ab1564599b6a81b0b8a3faf05
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)<{$TRANSTEMP_LOW_ALARM} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.4[{#SNMPINDEX}],1h)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)>{$TRANSTEMP_LOW_ALARM}'
+              name: 'Transceiver {#SNMPVALUE}: Value below Low Alarm Estimate'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              description: 'A calibrated threshold could not be read from the device, however the level is out of range for a typical transceiver'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensot-Type
+                  value: Temperature
+            -
+              uuid: c2c60fb1ca794d399f768bbfca0f83fa
+              expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.4[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.temp[{#SNMPINDEX}])'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.4[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.temp[{#SNMPINDEX}])'
+              name: 'Transceiver {#SNMPVALUE}: Value below Low Alarm Threshold'
+              opdata: '{ITEM.LASTVALUE1} (Threshold {ITEM.LASTVALUE2})'
+              priority: AVERAGE
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensot-Type
+                  value: Temperature
+            -
+              uuid: 1908641ccdb64cbeb58e137641c68c90
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)<{$TRANSTEMP_LOW_WARN} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.3[{#SNMPINDEX}],1h)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)>{$TRANSTEMP_LOW_WARN}'
+              name: 'Transceiver {#SNMPVALUE}: Value below Low Warn Estimate'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'A calibrated threshold could not be read from the device, however the level is out of range for a typical transceiver'
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value below Low Alarm Estimate'
+                  expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)<{$TRANSTEMP_LOW_ALARM} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.4[{#SNMPINDEX}],1h)'
+                  recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)>{$TRANSTEMP_LOW_ALARM}'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensot-Type
+                  value: Temperature
+            -
+              uuid: 583dfe3a4dce48eb99cdaaf0de62dbf9
+              expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.3[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.temp[{#SNMPINDEX}])'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.3[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.temp[{#SNMPINDEX}])'
+              name: 'Transceiver {#SNMPVALUE}: Value below Low Warn Threshold'
+              opdata: '{ITEM.LASTVALUE1} (Threshold {ITEM.LASTVALUE2})'
+              priority: WARNING
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value below Low Alarm Threshold'
+                  expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.4[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.temp[{#SNMPINDEX}])'
+                  recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.temp[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.temp.4[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.temp[{#SNMPINDEX}])'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensot-Type
+                  value: Temperature
+          graph_prototypes:
+            -
+              uuid: bd5630e9448140f9a3306b7c63cf0ae5
+              name: 'Transceiver Temperature {#SNMPVALUE}'
+              graph_items:
+                -
+                  sortorder: '1'
+                  drawtype: DASHED_LINE
+                  color: FF4000
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.temp.1[{#SNMPINDEX}]'
+                -
+                  sortorder: '2'
+                  drawtype: DASHED_LINE
+                  color: FF8000
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.temp.2[{#SNMPINDEX}]'
+                -
+                  sortorder: '3'
+                  drawtype: DASHED_LINE
+                  color: FF4000
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.temp.4[{#SNMPINDEX}]'
+                -
+                  sortorder: '4'
+                  drawtype: DASHED_LINE
+                  color: F7941D
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.temp.3[{#SNMPINDEX}]'
+                -
+                  sortorder: '5'
+                  drawtype: BOLD_LINE
+                  color: 0040FF
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorValue.temp[{#SNMPINDEX}]'
+        -
+          uuid: 8dbf294919984c27a3d0e4ad90c261e3
+          name: 'TX Sensors'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.2.1.47.1.1.1.1.2,{#CONTAINER},.1.3.6.1.2.1.47.1.1.1.1.4,{#SENSORTYPE},.1.3.6.1.2.1.47.1.1.1.1.5,{#IFALIAS},.1.3.6.1.2.1.47.1.1.1.1.14]'
+          key: snmp.discoverysensors.tx
+          delay: 30m
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SNMPVALUE}'
+                value: 'Transmit Power'
+                formulaid: B
+              -
+                macro: '{#SENSORTYPE}'
+                value: '8'
+                formulaid: A
+          item_prototypes:
+            -
+              uuid: a9ec73b19cca40f39822091b03551489
+              name: 'Transceiver {#SNMPVALUE}: Link Status'
+              type: CALCULATED
+              key: 'entSensorLinkStatus.TX[{#SNMPINDEX}]'
+              delay: 10m
+              history: 7d
+              trends: '0'
+              params: 'last(//entSensorLinkStatus[{#CONTAINER}])'
+              description: |
+                MIB: IF-MIB
+                The current operational state of the interface.
+                - The testing(3) state indicates that no operational packet scan be passed
+                - If ifAdminStatus is down(2) then ifOperStatus should be down(2)
+                - If ifAdminStatus is changed to up(1) then ifOperStatus should change to up(1) if the interface is ready to transmit and receive network traffic
+                - It should change todormant(5) if the interface is waiting for external actions (such as a serial line waiting for an incoming connection)
+                - It should remain in the down(2) state if and only if there is a fault that prevents it from going to the up(1) state
+                - It should remain in the notPresent(6) state if the interface has missing(typically, hardware) components.
+              valuemap:
+                name: entSensorLinkStatus
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: ae1d96b74b02425d983fcc1c7e519c01
+              name: 'Transceiver {#SNMPVALUE}: Sensor Status'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.1.1.1.5.{#SNMPINDEX}'
+              key: 'entSensorStatus.TX[{#SNMPINDEX}]'
+              delay: 30m
+              history: 7d
+              trends: '0'
+              valuemap:
+                name: entSensorStatus
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+              trigger_prototypes:
+                -
+                  uuid: 455d3a18c3534cdcb26919294bcb9a47
+                  expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.TX[{#SNMPINDEX}])=3'
+                  name: 'Transceiver RX {#SNMPVALUE} is nonoperational'
+                  priority: WARNING
+                  manual_close: 'YES'
+                  tags:
+                    -
+                      tag: Application
+                      value: Sensors
+                    -
+                      tag: Sensor-Type
+                      value: Transceiver
+            -
+              uuid: 0db28f5aa74f496887f719dd82ecc5e6
+              name: 'Transceiver {#SNMPVALUE}: High Alarm Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.1'
+              key: 'entSensorThresholdValue.TX.1[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              units: dBm
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '{$TX_HIGH_ALARM}'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: f1d351354036409fbea8326a3d14b15c
+              name: 'Transceiver {#SNMPVALUE}: High Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.2'
+              key: 'entSensorThresholdValue.TX.2[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              units: dBm
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '{$TX_HIGH_WARN}'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: 6c05698b189447c59e9d567b3073a031
+              name: 'Transceiver {#SNMPVALUE}: Low Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.3'
+              key: 'entSensorThresholdValue.TX.3[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              units: dBm
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '{$TX_LOW_WARN}'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: 7ac21b27b4834f43909c251288433c17
+              name: 'Transceiver {#SNMPVALUE}: Low Alarm Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.4'
+              key: 'entSensorThresholdValue.TX.4[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              units: dBm
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '{$TX_LOW_ALARM}'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: f5fa43da399a40c3b58d2f2182212852
+              name: 'Transceiver {#SNMPVALUE}: Type'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.47.1.1.1.1.2.{#CONTAINER}'
+              key: 'entSensorType.TX[{#SNMPINDEX}]'
+              delay: 30m
+              history: 7d
+              trends: '0'
+              value_type: TEXT
+              valuemap:
+                name: entSensorStatus
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: e7f4850f62b74dde8d3138a14933fee2
+              name: 'Transceiver {#SNMPVALUE}: Value'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.1.1.1.4.{#SNMPINDEX}'
+              key: 'entSensorValue.TX[{#SNMPINDEX}]'
+              delay: 10m
+              history: 30d
+              trends: 180d
+              value_type: FLOAT
+              units: dbm
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+              trigger_prototypes:
+                -
+                  uuid: bce5435bdf4249a2ae6f704cbfeca632
+                  expression: '(max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)-min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5))>{$TX_CHANGE_ALARM}'
+                  name: 'Transceiver TX {#SNMPVALUE} changed more than {$TX_CHANGE_ALARM}dB'
+                  priority: AVERAGE
+                  manual_close: 'YES'
+                  dependencies:
+                    -
+                      name: 'Transceiver RX {#SNMPVALUE} is nonoperational'
+                      expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.TX[{#SNMPINDEX}])=3'
+                    -
+                      name: 'Transceiver RX {#SNMPVALUE} is unavailable'
+                      expression: '(last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.TX[{#SNMPINDEX}])=2) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])=1)'
+                  tags:
+                    -
+                      tag: Application
+                      value: Sensors
+                    -
+                      tag: Sensor-Type
+                      value: Transceiver
+                -
+                  uuid: 7e608338b8d64c949c3aa537eab3faa6
+                  expression: '(max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)-min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5))>{$TX_CHANGE_WARN}'
+                  name: 'Transceiver TX {#SNMPVALUE} changed more than {$TX_CHANGE_WARN}dB'
+                  priority: WARNING
+                  manual_close: 'YES'
+                  dependencies:
+                    -
+                      name: 'Transceiver RX {#SNMPVALUE} is nonoperational'
+                      expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.TX[{#SNMPINDEX}])=3'
+                    -
+                      name: 'Transceiver RX {#SNMPVALUE} is unavailable'
+                      expression: '(last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.TX[{#SNMPINDEX}])=2) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])=1)'
+                    -
+                      name: 'Transceiver TX {#SNMPVALUE} changed more than {$TX_CHANGE_ALARM}dB'
+                      expression: '(max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)-min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5))>{$TX_CHANGE_ALARM}'
+                  tags:
+                    -
+                      tag: Application
+                      value: Sensors
+                    -
+                      tag: Sensor-Type
+                      value: Transceiver
+          trigger_prototypes:
+            -
+              uuid: b85d0c82345f402b8f1cfab73fdb2910
+              expression: '(last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.TX[{#SNMPINDEX}])=2) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])=1)'
+              name: 'Transceiver RX {#SNMPVALUE} is unavailable'
+              priority: INFO
+              manual_close: 'YES'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: 6b348353e991486a9f6adc0f037af2b0
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)>{$TX_HIGH_ALARM} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.1[{#SNMPINDEX}],1h) and  (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])=1)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)<{$TX_HIGH_ALARM} or (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])<>1)'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Estimate'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              description: 'A calibrated threshold could not be read from the device, however the level is out of range for a typical transceiver'
+              dependencies:
+                -
+                  name: 'Transceiver RX {#SNMPVALUE} is unavailable'
+                  expression: '(last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.TX[{#SNMPINDEX}])=2) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])=1)'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: a520c8376ecc4d838d323ad5d6993fee
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.1[{#SNMPINDEX}]) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])=1)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.1[{#SNMPINDEX}])'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Threshold'
+              opdata: '{ITEM.LASTVALUE1} (Threshold {ITEM.LASTVALUE2})'
+              priority: AVERAGE
+              dependencies:
+                -
+                  name: 'Transceiver RX {#SNMPVALUE} is unavailable'
+                  expression: '(last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.TX[{#SNMPINDEX}])=2) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])=1)'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: d5392025d23044af8e51986cd60f565b
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)>{$TX_HIGH_WARN} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.2[{#SNMPINDEX}],1h)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)<{$TX_HIGH_WARN} or (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])<>1)'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Warn Estimate'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'A calibrated threshold could not be read from the device, however the level is out of range for a typical transceiver'
+              manual_close: 'YES'
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Estimate'
+                  expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)>{$TX_HIGH_ALARM} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.1[{#SNMPINDEX}],1h) and  (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])=1)'
+                  recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)<{$TX_HIGH_ALARM} or (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])<>1)'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: 7fc1ff22d014477b985d987326554391
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.2[{#SNMPINDEX}])'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.2[{#SNMPINDEX}])'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Warn Threshold'
+              opdata: '{ITEM.LASTVALUE1} (Threshold {ITEM.LASTVALUE2})'
+              priority: WARNING
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Threshold'
+                  expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.1[{#SNMPINDEX}]) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])=1)'
+                  recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.1[{#SNMPINDEX}])'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: 1dfeec7427c44cf294057860c983d2cd
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)<{$TX_LOW_ALARM} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.4[{#SNMPINDEX}],1h)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)>{$TX_LOW_ALARM}'
+              name: 'Transceiver {#SNMPVALUE}: Value below Low Alarm Estimate'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              description: 'A calibrated threshold could not be read from the device, however the level is out of range for a typical transceiver'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: fdc538a34bf1434298a4463062713bdc
+              expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.4[{#SNMPINDEX}]) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])=1)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.4[{#SNMPINDEX}]) or (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])<>1)'
+              name: 'Transceiver {#SNMPVALUE}: Value below Low Alarm Threshold'
+              opdata: '{ITEM.LASTVALUE1} (Threshold {ITEM.LASTVALUE2})'
+              priority: AVERAGE
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: cef14dcd36844ff78b1038dc25550f52
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)<{$TX_LOW_WARN} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.3[{#SNMPINDEX}],1h) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])=1)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)>{$TX_LOW_WARN} or  (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])<>1)'
+              name: 'Transceiver {#SNMPVALUE}: Value below Low Warn Estimate'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'A calibrated threshold could not be read from the device, however the level is out of range for a typical transceiver'
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value below Low Alarm Estimate'
+                  expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)<{$TX_LOW_ALARM} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.4[{#SNMPINDEX}],1h)'
+                  recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)>{$TX_LOW_ALARM}'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: d90ab5931f75484aaef75157a14d42c4
+              expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.3[{#SNMPINDEX}]) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])=1)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.3[{#SNMPINDEX}]) or (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])<>1)'
+              name: 'Transceiver {#SNMPVALUE}: Value below Low Warn Threshold'
+              opdata: '{ITEM.LASTVALUE1} (Threshold {ITEM.LASTVALUE2})'
+              priority: WARNING
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value below Low Alarm Threshold'
+                  expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.4[{#SNMPINDEX}]) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])=1)'
+                  recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.4[{#SNMPINDEX}]) or (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])<>1)'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+          graph_prototypes:
+            -
+              uuid: c5af2b2f65d84061a77682598b91ddbe
+              name: 'Transceiver TX {#SNMPVALUE}'
+              graph_items:
+                -
+                  sortorder: '1'
+                  drawtype: BOLD_LINE
+                  color: 199C0D
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorValue.TX[{#SNMPINDEX}]'
+                -
+                  sortorder: '2'
+                  drawtype: DASHED_LINE
+                  color: FF4000
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.TX.1[{#SNMPINDEX}]'
+                -
+                  sortorder: '3'
+                  drawtype: DASHED_LINE
+                  color: FF8000
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.TX.2[{#SNMPINDEX}]'
+                -
+                  sortorder: '4'
+                  drawtype: DASHED_LINE
+                  color: FF4000
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.TX.4[{#SNMPINDEX}]'
+                -
+                  sortorder: '5'
+                  drawtype: DASHED_LINE
+                  color: FF8000
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.TX.3[{#SNMPINDEX}]'
+        -
+          uuid: 9cdda0e3e6a14e77920891e56411792d
+          name: 'Voltage Sensors'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.2.1.47.1.1.1.1.2,{#CONTAINER},.1.3.6.1.2.1.47.1.1.1.1.4,{#SENSORTYPE},.1.3.6.1.2.1.47.1.1.1.1.5,{#IFALIAS},.1.3.6.1.2.1.47.1.1.1.1.14]'
+          key: snmp.discoverysensors.volt
+          delay: 30m
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#SNMPVALUE}'
+                value: 'Supply Voltage'
+                formulaid: B
+              -
+                macro: '{#SENSORTYPE}'
+                value: '8'
+                formulaid: A
+          item_prototypes:
+            -
+              uuid: 1dbf75ce8abd4e16877007a771d30643
+              name: 'Transceiver {#SNMPVALUE}: Sensor Precision'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.9.9.91.1.1.1.1.3.{#SNMPINDEX}'
+              key: 'entSensorPrecision.volt[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              preprocessing:
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - 'return (Math.pow(10, -value))'
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensor-Type
+                  value: Voltage
+            -
+              uuid: 08847782c7b842eda5bbcbb991fd76a3
+              name: 'Transceiver {#SNMPVALUE}: Raw'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.1.1.1.4.{#SNMPINDEX}'
+              key: 'entSensorRaw.volt[{#SNMPINDEX}]'
+              delay: 10m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              description: 'This is the raw value as received from snmp and must be adjusted by sensorPrecision to interpret'
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensor-Type
+                  value: Voltage
+            -
+              uuid: 3653cfd027cd4dd7aa9026b731cf0d99
+              name: 'Transceiver {#SNMPVALUE}: Sensor Status'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.1.1.1.5.{#SNMPINDEX}'
+              key: 'entSensorStatus.volt[{#SNMPINDEX}]'
+              delay: 30m
+              history: 7d
+              trends: '0'
+              valuemap:
+                name: entSensorStatus
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensor-Type
+                  value: Voltage
+              trigger_prototypes:
+                -
+                  uuid: 7440fa42b82b41e894911ff6ddadce49
+                  expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.volt[{#SNMPINDEX}])=3'
+                  name: 'Transceiver {#SNMPVALUE} is nonoperational'
+                  priority: WARNING
+                  manual_close: 'YES'
+                  tags:
+                    -
+                      tag: Application
+                      value: Sensors
+                    -
+                      tag: Sensor-Type
+                      value: Transceiver
+                    -
+                      tag: Sensor-Type
+                      value: Voltage
+                -
+                  uuid: d0c698d9fba4464998816ef544654e10
+                  expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.volt[{#SNMPINDEX}])=2'
+                  name: 'Transceiver {#SNMPVALUE} is unavailable'
+                  priority: INFO
+                  manual_close: 'YES'
+                  tags:
+                    -
+                      tag: Application
+                      value: Sensors
+                    -
+                      tag: Sensor-Type
+                      value: Transceiver
+                    -
+                      tag: Sensor-Type
+                      value: Voltage
+            -
+              uuid: fda113814c5141f3a9a37646bd0d49b4
+              name: 'Transceiver {#SNMPVALUE}: High Alarm Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.1'
+              key: 'entSensorThresholdValue.volt.1[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensor-Type
+                  value: Voltage
+            -
+              uuid: 17d43dec825640faba6e73e5c1b6b030
+              name: 'Transceiver {#SNMPVALUE}: High Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.2'
+              key: 'entSensorThresholdValue.volt.2[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensor-Type
+                  value: Voltage
+            -
+              uuid: e06ba5866200405299d54b220e648a7b
+              name: 'Transceiver {#SNMPVALUE}: Low Warning Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.3'
+              key: 'entSensorThresholdValue.volt.3[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensor-Type
+                  value: Voltage
+            -
+              uuid: 7f739ba44cfc4f8fae9da417d25e18e9
+              name: 'Transceiver {#SNMPVALUE}: Low Alarm Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.9.9.91.1.2.1.1.4.{#SNMPINDEX}.4'
+              key: 'entSensorThresholdValue.volt.4[{#SNMPINDEX}]'
+              delay: 30m
+              history: 1d
+              trends: '0'
+              value_type: FLOAT
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensor-Type
+                  value: Voltage
+            -
+              uuid: dd6a0458cc974dbe8dfb4ba81c094e42
+              name: 'Transceiver {#SNMPVALUE}: Value'
+              type: CALCULATED
+              key: 'entSensorValue.volt[{#SNMPINDEX}]'
+              delay: 10m
+              history: 30d
+              trends: 800d
+              value_type: FLOAT
+              units: V
+              params: 'last(//entSensorPrecision.volt[{#SNMPINDEX}])*last(//entSensorRaw.volt[{#SNMPINDEX}])'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Transceiver
+                  value: '{#CONTAINER}'
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensor-Type
+                  value: Voltage
+          trigger_prototypes:
+            -
+              uuid: f6dea18f355741de89f9bfc98c9aff12
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)>{$TRANSVOLT_HIGH_ALARM} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.1[{#SNMPINDEX}],1h)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)<{$TRANSVOLT_HIGH_ALARM}'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Estimate'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              description: 'A calibrated threshold could not be read from the device, however the level is out of range for a typical transceiver'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensor-Type
+                  value: Voltage
+            -
+              uuid: 8e77708fd2aa43d096fcb7f42d6c0609
+              expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.1[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.volt[{#SNMPINDEX}])'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.1[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.volt[{#SNMPINDEX}])'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Threshold'
+              opdata: '{ITEM.LASTVALUE1} (Threshold {ITEM.LASTVALUE2})'
+              priority: AVERAGE
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensor-Type
+                  value: Voltage
+            -
+              uuid: dece49bed38142388ef3afb4483d218b
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)>{$TRANSVOLT_HIGH_WARN} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.2[{#SNMPINDEX}],1h)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)<{$TRANSVOLT_HIGH_WARN}'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Warn Estimate'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'A calibrated threshold could not be read from the device, however the level is out of range for a typical transceiver'
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Estimate'
+                  expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)>{$TRANSVOLT_HIGH_ALARM} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.1[{#SNMPINDEX}],1h)'
+                  recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)<{$TRANSVOLT_HIGH_ALARM}'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensor-Type
+                  value: Voltage
+            -
+              uuid: 78372c8e82a84671a8f6fbc8007b178e
+              expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.2[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.volt[{#SNMPINDEX}])'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.2[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.volt[{#SNMPINDEX}])'
+              name: 'Transceiver {#SNMPVALUE}: Value above High Warn Threshold'
+              opdata: '{ITEM.LASTVALUE1} (Threshold {ITEM.LASTVALUE2})'
+              priority: WARNING
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value above High Alarm Threshold'
+                  expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.1[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.volt[{#SNMPINDEX}])'
+                  recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.1[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.volt[{#SNMPINDEX}])'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensor-Type
+                  value: Voltage
+            -
+              uuid: 250f64e38b864348b509c5376c43e280
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)<{$TRANSVOLT_LOW_ALARM} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.4[{#SNMPINDEX}],1h)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)>{$TRANSVOLT_LOW_ALARM}'
+              name: 'Transceiver {#SNMPVALUE}: Value below Low Alarm Estimate'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              description: 'A calibrated threshold could not be read from the device, however the level is out of range for a typical transceiver'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensor-Type
+                  value: Voltage
+            -
+              uuid: bbefbd7936724834b8f07bfea99ee79f
+              expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.4[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.volt[{#SNMPINDEX}])'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.4[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.volt[{#SNMPINDEX}])'
+              name: 'Transceiver {#SNMPVALUE}: Value below Low Alarm Threshold'
+              opdata: '{ITEM.LASTVALUE1} (Threshold {ITEM.LASTVALUE2})'
+              priority: AVERAGE
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensor-Type
+                  value: Voltage
+            -
+              uuid: 31ad655ee6fe4f53a66e048cfbb40ac0
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)<{$TRANSVOLT_LOW_WARN} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.3[{#SNMPINDEX}],1h)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)>{$TRANSVOLT_LOW_WARN}'
+              name: 'Transceiver {#SNMPVALUE}: Value below Low Warn Estimate'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'A calibrated threshold could not be read from the device, however the level is out of range for a typical transceiver'
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value below Low Alarm Estimate'
+                  expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)<{$TRANSVOLT_LOW_ALARM} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.4[{#SNMPINDEX}],1h)'
+                  recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)>{$TRANSVOLT_LOW_ALARM}'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensor-Type
+                  value: Voltage
+            -
+              uuid: 440c94c9c5684a2aa1da2a1a34746c31
+              expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.3[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.volt[{#SNMPINDEX}])'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.3[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.volt[{#SNMPINDEX}])'
+              name: 'Transceiver {#SNMPVALUE}: Value below Low Warn Threshold'
+              opdata: '{ITEM.LASTVALUE1} (Threshold {ITEM.LASTVALUE2})'
+              priority: WARNING
+              dependencies:
+                -
+                  name: 'Transceiver {#SNMPVALUE}: Value below Low Alarm Threshold'
+                  expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)<last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.4[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.volt[{#SNMPINDEX}])'
+                  recovery_expression: 'min(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.volt[{#SNMPINDEX}],#5)>last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.volt.4[{#SNMPINDEX}])*last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorPrecision.volt[{#SNMPINDEX}])'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+                -
+                  tag: Sensor-Type
+                  value: Voltage
+          graph_prototypes:
+            -
+              uuid: d533e8ab35c849c38150c2ddb3af9c5e
+              name: 'Transceiver Voltage {#SNMPVALUE}'
+              graph_items:
+                -
+                  sortorder: '1'
+                  drawtype: DASHED_LINE
+                  color: FF4000
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.volt.1[{#SNMPINDEX}]'
+                -
+                  sortorder: '2'
+                  drawtype: DASHED_LINE
+                  color: FF8000
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.volt.2[{#SNMPINDEX}]'
+                -
+                  sortorder: '3'
+                  drawtype: DASHED_LINE
+                  color: FF4000
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.volt.4[{#SNMPINDEX}]'
+                -
+                  sortorder: '4'
+                  drawtype: DASHED_LINE
+                  color: F7941D
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorThresholdValue.volt.3[{#SNMPINDEX}]'
+                -
+                  sortorder: '5'
+                  drawtype: BOLD_LINE
+                  color: FFFF00
+                  item:
+                    host: 'NCZ Cisco Transceiver Sensors by SNMPv2'
+                    key: 'entSensorValue.volt[{#SNMPINDEX}]'
+      tags:
+        -
+          tag: class
+          value: network
+        -
+          tag: target
+          value: cisco
+      macros:
+        -
+          macro: '{$RX_CHANGE_ALARM}'
+          value: '3'
+        -
+          macro: '{$RX_CHANGE_WARN}'
+          value: '1'
+        -
+          macro: '{$RX_HIGH_ALARM}'
+          value: '0'
+        -
+          macro: '{$RX_HIGH_WARN}'
+          value: '-1.0'
+        -
+          macro: '{$RX_LOW_ALARM}'
+          value: '-40'
+        -
+          macro: '{$RX_LOW_WARN}'
+          value: '-10'
+        -
+          macro: '{$TRANSTEMP_HIGH_ALARM}'
+          value: '75'
+        -
+          macro: '{$TRANSTEMP_HIGH_WARN}'
+          value: '70'
+        -
+          macro: '{$TRANSTEMP_LOW_ALARM}'
+          value: '0'
+        -
+          macro: '{$TRANSTEMP_LOW_WARN}'
+          value: '5'
+        -
+          macro: '{$TRANSVOLT_HIGH_ALARM}'
+          value: '3.7'
+        -
+          macro: '{$TRANSVOLT_HIGH_WARN}'
+          value: '3.5'
+        -
+          macro: '{$TRANSVOLT_LOW_ALARM}'
+          value: '3.1'
+        -
+          macro: '{$TRANSVOLT_LOW_WARN}'
+          value: '2.8'
+        -
+          macro: '{$TX_CHANGE_ALARM}'
+          value: '3'
+        -
+          macro: '{$TX_CHANGE_WARN}'
+          value: '1'
+        -
+          macro: '{$TX_HIGH_ALARM}'
+          value: '0'
+        -
+          macro: '{$TX_HIGH_WARN}'
+          value: '-1.0'
+        -
+          macro: '{$TX_LOW_ALARM}'
+          value: '-20.0'
+        -
+          macro: '{$TX_LOW_WARN}'
+          value: '-8.0'
+      valuemaps:
+        -
+          uuid: d0285d5e20d345f0a2a703f1a59f288d
+          name: entSensorLinkStatus
+          mappings:
+            -
+              value: '1'
+              newvalue: 'Link Up'
+            -
+              value: '2'
+              newvalue: 'Link Down'
+            -
+              value: '3'
+              newvalue: 'Link Testing'
+            -
+              value: '4'
+              newvalue: 'Link Unknown'
+            -
+              value: '5'
+              newvalue: 'Link Dormant'
+            -
+              value: '6'
+              newvalue: 'Link Not Present'
+            -
+              value: '7'
+              newvalue: 'Link Lower Layer Down'
+        -
+          uuid: 0c6d26cfd4b047ae8e5933f9d7712be8
+          name: entSensorStatus
+          mappings:
+            -
+              value: '1'
+              newvalue: OK
+            -
+              value: '2'
+              newvalue: Unavailable
+            -
+              value: '3'
+              newvalue: Nonoperational
