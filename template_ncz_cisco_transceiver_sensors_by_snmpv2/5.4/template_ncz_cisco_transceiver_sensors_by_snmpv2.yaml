@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.4'
-  date: '2023-02-22T06:07:57Z'
+  date: '2023-02-23T06:51:47Z'
   groups:
     -
       uuid: 36bff6c29af64692839d077febfc7079
@@ -1624,7 +1624,7 @@ zabbix_export:
                   value: Transceiver
             -
               uuid: d5392025d23044af8e51986cd60f565b
-              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)>{$TX_HIGH_WARN} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.2[{#SNMPINDEX}],1h)'
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)>{$TX_HIGH_WARN} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.TX.2[{#SNMPINDEX}],1h) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}])=1)'
               recovery_mode: RECOVERY_EXPRESSION
               recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.TX[{#SNMPINDEX}],#5)<{$TX_HIGH_WARN} or (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.TX[{#SNMPINDEX}])<>1)'
               name: 'Transceiver {#SNMPVALUE}: Value above High Warn Estimate'
