@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.4'
-  date: '2023-02-23T07:19:19Z'
+  date: '2023-02-23T07:38:42Z'
   groups:
     -
       uuid: 4918b88734c54bd094cff7585b5d71fc
@@ -106,17 +106,18 @@ zabbix_export:
               delay: 15m
               history: 30d
               trends: '0'
-              valuemap:
-                name: pethPsePortDetectionStatus
               preprocessing:
                 -
                   type: DISCARD_UNCHANGED_HEARTBEAT
                   parameters:
                     - '7200'
                 -
-                  type: MULTIPLIER
+                  type: IN_RANGE
                   parameters:
-                    - '0.5'
+                    - '1'
+                    - '1'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
               tags:
                 -
                   tag: Application
@@ -318,7 +319,7 @@ zabbix_export:
                   value: PoE
             -
               uuid: bbc8ece971d24d2a8f2245b175619a4a
-              expression: '(last(/NCZ Cisco PoE Status by SNMPv2/cpeExtPsePortDeviceDetected[{#SNMPINDEX}])=1) and (last(/NCZ Cisco PoE Status by SNMPv2/pethPsePortDetectionStatus[{#SNMPINDEX}])<>3)'
+              expression: '(last(/NCZ Cisco PoE Status by SNMPv2/cpeExtPsePortDeviceDetected[{#SNMPINDEX}])=1) and (last(/NCZ Cisco PoE Status by SNMPv2/pethPsePortDetectionStatus[{#SNMPINDEX}])<>3) and (not nodata(/NCZ Cisco PoE Status by SNMPv2/pethPsePortDetectionStatus[{#SNMPINDEX}],2h))'
               name: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")} Power: PD Detected but not being powered'
               priority: INFO
               description: 'This could be due to a fault condition or a lack of available power.'
