@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.4'
-  date: '2023-02-23T10:25:23Z'
+  date: '2023-02-23T12:40:02Z'
   groups:
     -
       uuid: 4918b88734c54bd094cff7585b5d71fc
@@ -103,14 +103,10 @@ zabbix_export:
               type: SNMP_AGENT
               snmp_oid: '.1.3.6.1.4.1.9.9.402.1.2.1.3.{#SNMPINDEX}'
               key: 'cpeExtPsePortDeviceDetected[{#SNMPINDEX}]'
-              delay: 15m
+              delay: 5m
               history: 30d
               trends: '0'
               preprocessing:
-                -
-                  type: DISCARD_UNCHANGED_HEARTBEAT
-                  parameters:
-                    - '7200'
                 -
                   type: IN_RANGE
                   parameters:
@@ -135,14 +131,9 @@ zabbix_export:
               snmp_oid: '.1.3.6.1.2.1.47.1.1.1.1.2.{#IFACE}'
               key: 'cpeExtPsePortLinkDesc[{#SNMPINDEX}]'
               delay: 1h
-              history: 1d
+              history: 7d
               trends: '0'
               value_type: TEXT
-              preprocessing:
-                -
-                  type: DISCARD_UNCHANGED_HEARTBEAT
-                  parameters:
-                    - '7200'
               tags:
                 -
                   tag: Application
@@ -159,7 +150,7 @@ zabbix_export:
               type: SNMP_AGENT
               snmp_oid: '.1.3.6.1.4.1.9.9.402.1.2.1.7.{#SNMPINDEX}'
               key: 'cpeExtPsePortPwrAllocated[{#SNMPINDEX}]'
-              delay: 15m
+              delay: 5m
               history: 30d
               trends: 180d
               value_type: FLOAT
@@ -185,7 +176,7 @@ zabbix_export:
               type: SNMP_AGENT
               snmp_oid: '.1.3.6.1.4.1.9.9.402.1.2.1.9.{#SNMPINDEX}'
               key: 'cpeExtPsePortPwrConsumption[{#SNMPINDEX}]'
-              delay: 15m
+              delay: 5m
               history: 30d
               trends: 180d
               value_type: FLOAT
@@ -212,7 +203,7 @@ zabbix_export:
               snmp_oid: '.1.3.6.1.4.1.9.9.402.1.2.1.6.{#SNMPINDEX}'
               key: 'cpeExtPsePortPwrMax[{#SNMPINDEX}]'
               delay: 1h
-              history: 30d
+              history: 7d
               trends: '0'
               value_type: FLOAT
               units: W
@@ -221,10 +212,6 @@ zabbix_export:
                   type: MULTIPLIER
                   parameters:
                     - '{$PSE_VALUE_SCALE}'
-                -
-                  type: DISCARD_UNCHANGED_HEARTBEAT
-                  parameters:
-                    - '7200'
               tags:
                 -
                   tag: Application
@@ -241,16 +228,11 @@ zabbix_export:
               type: SNMP_AGENT
               snmp_oid: '.1.3.6.1.2.1.105.1.1.1.6.{#SNMPINDEX}'
               key: 'pethPsePortDetectionStatus[{#SNMPINDEX}]'
-              delay: 15m
+              delay: 5m
               history: 30d
               trends: '0'
               valuemap:
                 name: pethPsePortDetectionStatus
-              preprocessing:
-                -
-                  type: DISCARD_UNCHANGED_HEARTBEAT
-                  parameters:
-                    - '7200'
               tags:
                 -
                   tag: Application
@@ -279,15 +261,10 @@ zabbix_export:
               type: SNMP_AGENT
               snmp_oid: '.1.3.6.1.2.1.105.1.1.1.9.{#SNMPINDEX}'
               key: 'pethPsePortType[{#SNMPINDEX}]'
-              delay: 15m
+              delay: 5m
               history: 30d
               trends: '0'
               value_type: TEXT
-              preprocessing:
-                -
-                  type: DISCARD_UNCHANGED_HEARTBEAT
-                  parameters:
-                    - '7200'
               tags:
                 -
                   tag: Application
