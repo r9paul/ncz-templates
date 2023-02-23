@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.4'
-  date: '2023-02-23T07:38:42Z'
+  date: '2023-02-23T10:25:23Z'
   groups:
     -
       uuid: 4918b88734c54bd094cff7585b5d71fc
@@ -350,6 +350,13 @@ zabbix_export:
               units: W
               params: 'sum(last_foreach(//cpeExtPsePortPwrAllocated[*]?[tag="PoE-Group:{#SNMPINDEX}"]))'
               description: 'This is allocated power, calculated from the sum of allocated port powers on this PSE (since not all platforms support polling this value directly).'
+              preprocessing:
+                -
+                  type: CHECK_NOT_SUPPORTED
+                  parameters:
+                    - ''
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
               tags:
                 -
                   tag: Application
