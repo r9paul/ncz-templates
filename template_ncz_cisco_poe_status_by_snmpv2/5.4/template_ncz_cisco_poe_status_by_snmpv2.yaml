@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.4'
-  date: '2023-02-23T12:40:02Z'
+  date: '2023-02-24T04:49:14Z'
   groups:
     -
       uuid: 4918b88734c54bd094cff7585b5d71fc
@@ -391,19 +391,6 @@ zabbix_export:
                 -
                   tag: PoE-Group
                   value: '{#SNMPINDEX}'
-              trigger_prototypes:
-                -
-                  uuid: 081b6f9f3f1d466bab060f37e8ffbd85
-                  expression: 'last(/NCZ Cisco PoE Status by SNMPv2/pethMainPseFreePower[{#SNMPINDEX}]) < 15'
-                  name: 'PSE {#SNMPVALUE} has no available PoE budget'
-                  opdata: '{ITEM.LASTVALUE1} available'
-                  priority: WARNING
-                  description: 'There is less than 15W available, so no further PD devices may be connected to this supply.'
-                  manual_close: 'YES'
-                  tags:
-                    -
-                      tag: Application
-                      value: PoE
             -
               uuid: e56406af9cfc472db5b0fdab9fbcc470
               name: 'PSE {#SNMPVALUE} #{#SNMPINDEX}: Operational Status'
@@ -508,6 +495,18 @@ zabbix_export:
                   value: '{#SNMPINDEX}'
           trigger_prototypes:
             -
+              uuid: 081b6f9f3f1d466bab060f37e8ffbd85
+              expression: 'last(/NCZ Cisco PoE Status by SNMPv2/pethMainPseFreePower[{#SNMPINDEX}]) < 15 and last(/NCZ Cisco PoE Status by SNMPv2/pethMainPseOperStatus[{#SNMPINDEX}])=1'
+              name: 'PSE {#SNMPVALUE} has no available PoE budget'
+              opdata: '{ITEM.LASTVALUE1} available'
+              priority: WARNING
+              description: 'There is less than 15W available, so no further PD devices may be connected to this supply.'
+              manual_close: 'YES'
+              tags:
+                -
+                  tag: Application
+                  value: PoE
+            -
               uuid: 67cbd5df778c4b03bdae4995f234002e
               expression: |
                 (last(/NCZ Cisco PoE Status by SNMPv2/pethMainPseFreePower[{#SNMPINDEX}]) > 0) and
@@ -520,7 +519,7 @@ zabbix_export:
               dependencies:
                 -
                   name: 'PSE {#SNMPVALUE} has no available PoE budget'
-                  expression: 'last(/NCZ Cisco PoE Status by SNMPv2/pethMainPseFreePower[{#SNMPINDEX}]) < 15'
+                  expression: 'last(/NCZ Cisco PoE Status by SNMPv2/pethMainPseFreePower[{#SNMPINDEX}]) < 15 and last(/NCZ Cisco PoE Status by SNMPv2/pethMainPseOperStatus[{#SNMPINDEX}])=1'
               tags:
                 -
                   tag: Application
