@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.4'
-  date: '2023-02-25T04:12:25Z'
+  date: '2023-02-25T05:44:17Z'
   groups:
     -
       uuid: 36bff6c29af64692839d077febfc7079
@@ -408,19 +408,6 @@ zabbix_export:
                     -
                       tag: Sensor-Type
                       value: Transceiver
-                -
-                  uuid: ac850e070bc84db6be030cc8962af898
-                  expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.RX[{#SNMPINDEX}])=2'
-                  name: 'Transceiver RX {#SNMPVALUE} is unavailable'
-                  priority: INFO
-                  manual_close: 'YES'
-                  tags:
-                    -
-                      tag: Application
-                      value: Sensors
-                    -
-                      tag: Sensor-Type
-                      value: Transceiver
             -
               uuid: 0694ed41a3264958bcff44842ec39eaa
               name: 'Transceiver {#SNMPVALUE}: High Alarm Threshold'
@@ -594,7 +581,7 @@ zabbix_export:
                   expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.RX[{#SNMPINDEX}])=3'
                 -
                   name: 'Transceiver RX {#SNMPVALUE} is unavailable'
-                  expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.RX[{#SNMPINDEX}])=2'
+                  expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.RX[{#SNMPINDEX}])=2 and last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}])=1'
               tags:
                 -
                   tag: Application
@@ -617,7 +604,20 @@ zabbix_export:
                   expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.RX[{#SNMPINDEX}])=3'
                 -
                   name: 'Transceiver RX {#SNMPVALUE} is unavailable'
-                  expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.RX[{#SNMPINDEX}])=2'
+                  expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.RX[{#SNMPINDEX}])=2 and last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}])=1'
+              tags:
+                -
+                  tag: Application
+                  value: Sensors
+                -
+                  tag: Sensor-Type
+                  value: Transceiver
+            -
+              uuid: ac850e070bc84db6be030cc8962af898
+              expression: 'last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorStatus.RX[{#SNMPINDEX}])=2 and last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}])=1'
+              name: 'Transceiver RX {#SNMPVALUE} is unavailable'
+              priority: INFO
+              manual_close: 'YES'
               tags:
                 -
                   tag: Application
