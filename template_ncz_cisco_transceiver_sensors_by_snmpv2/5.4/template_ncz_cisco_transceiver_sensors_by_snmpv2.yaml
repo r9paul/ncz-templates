@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.4'
-  date: '2023-02-23T06:51:47Z'
+  date: '2023-02-25T04:12:25Z'
   groups:
     -
       uuid: 36bff6c29af64692839d077febfc7079
@@ -82,7 +82,7 @@ zabbix_export:
               type: SNMP_AGENT
               snmp_oid: '1.3.6.1.2.1.2.2.1.8.{#IFALIAS}'
               key: 'entSensorLinkStatus[{#SNMPINDEX}]'
-              delay: 10m
+              delay: 5m
               history: 7d
               trends: '0'
               description: |
@@ -343,7 +343,7 @@ zabbix_export:
               name: 'Transceiver {#SNMPVALUE}: Link Status'
               type: CALCULATED
               key: 'entSensorLinkStatus.RX[{#SNMPINDEX}]'
-              delay: 10m
+              delay: 5m
               history: 7d
               trends: '0'
               params: 'last(//entSensorLinkStatus[{#CONTAINER}])'
@@ -358,6 +358,11 @@ zabbix_export:
                 - It should remain in the notPresent(6) state if the interface has missing(typically, hardware) components.
               valuemap:
                 name: entSensorLinkStatus
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '900'
               tags:
                 -
                   tag: Application
@@ -652,9 +657,9 @@ zabbix_export:
                   value: Transciever
             -
               uuid: 02e8c0e390d24212bfb0602d1418b9e1
-              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)>{$RX_HIGH_WARN} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.2[{#SNMPINDEX}],1h)'
+              expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)>{$RX_HIGH_WARN} and nodata(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorThresholdValue.RX.2[{#SNMPINDEX}],1h) and (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}])=1)'
               recovery_mode: RECOVERY_EXPRESSION
-              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)<{$RX_HIGH_WARN}'
+              recovery_expression: 'max(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorValue.RX[{#SNMPINDEX}],#5)<{$RX_HIGH_WARN} or  (last(/NCZ Cisco Transceiver Sensors by SNMPv2/entSensorLinkStatus.RX[{#SNMPINDEX}])<>1)'
               name: 'Transceiver {#SNMPVALUE}: Value above High Warn Estimate'
               opdata: '{ITEM.LASTVALUE1}'
               priority: WARNING
@@ -1305,7 +1310,7 @@ zabbix_export:
               name: 'Transceiver {#SNMPVALUE}: Link Status'
               type: CALCULATED
               key: 'entSensorLinkStatus.TX[{#SNMPINDEX}]'
-              delay: 10m
+              delay: 5m
               history: 7d
               trends: '0'
               params: 'last(//entSensorLinkStatus[{#CONTAINER}])'
@@ -1320,6 +1325,11 @@ zabbix_export:
                 - It should remain in the notPresent(6) state if the interface has missing(typically, hardware) components.
               valuemap:
                 name: entSensorLinkStatus
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '900'
               tags:
                 -
                   tag: Application
