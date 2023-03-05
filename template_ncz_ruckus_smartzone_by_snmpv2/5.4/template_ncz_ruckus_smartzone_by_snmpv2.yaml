@@ -1,0 +1,967 @@
+zabbix_export:
+  version: '5.4'
+  date: '2023-03-05T22:04:05Z'
+  groups:
+    -
+      uuid: 4918b88734c54bd094cff7585b5d71fc
+      name: 'Templates/Network Devices'
+  templates:
+    -
+      uuid: b22a292458bb4d9cbd3f4c9a83224cbd
+      template: 'NCZ Ruckus SmartZone by SNMPv2'
+      name: 'NCZ Ruckus SmartZone by SNMPv2'
+      description: |
+        Template for monitoring Ruckus SmartZone Wireless Controller 
+        
+        Tested with Zabbix 5.4, Ruckus SmartZone vSZ-H 5.2, 6.1
+      groups:
+        -
+          name: 'Templates/Network Devices'
+      items:
+        -
+          uuid: 3b9a21fa9d5546d29d4c6bce22a59279
+          name: 'Number Access Points'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.25053.1.3.1.1.1.15.1.0
+          key: ruckusSystemStatsNumAP
+          delay: 5m
+          trends: 800d
+          tags:
+            -
+              tag: Application
+              value: Wireless
+        -
+          uuid: a2a5487bfb2b44bf895956d3a818d38d
+          name: 'Number Clients'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.25053.1.3.1.1.1.15.2.0
+          key: ruckusSystemStatsNumSta
+          trends: 800d
+          units: Users
+          tags:
+            -
+              tag: Application
+              value: Users
+            -
+              tag: Application
+              value: Wireless
+        -
+          uuid: 2422c144361841aaba4ca00af1b70733
+          name: 'Serial Number'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.25053.1.3.1.1.1.15.13.0
+          key: ruckusSystemStatsSerialNumber
+          delay: 1d
+          history: 1w
+          trends: '0'
+          value_type: TEXT
+          inventory_link: SERIALNO_B
+          tags:
+            -
+              tag: Application
+              value: Wireless
+        -
+          uuid: 49457e39e8b2415fbddadb8ccd88b1c6
+          name: 'Total Rx Bytes'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.25053.1.3.1.1.1.15.6.0
+          key: ruckusSystemStatsWLANTotalRxBytes
+          delay: 15m
+          trends: 800d
+          units: b
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+            -
+              type: MULTIPLIER
+              parameters:
+                - '8'
+          tags:
+            -
+              tag: Application
+              value: Traffic
+            -
+              tag: Application
+              value: Wireless
+        -
+          uuid: 7dca094401f6429fab2d3ee906ee816a
+          name: 'Total Rx Multicast PPS'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.25053.1.3.1.1.1.15.7.0
+          key: ruckusSystemStatsWLANTotalRxMulticast
+          delay: 15m
+          trends: 800d
+          units: pps
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: Traffic
+            -
+              tag: Application
+              value: Wireless
+        -
+          uuid: 060aea66f4be4113a727dea77849607b
+          name: 'Total Rx PPS'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.25053.1.3.1.1.1.15.5.0
+          key: ruckusSystemStatsWLANTotalRxPkts
+          delay: 15m
+          trends: 800d
+          units: pps
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: Traffic
+            -
+              tag: Application
+              value: Wireless
+        -
+          uuid: b52f6697e24b4d2996d9c8d0eba6ae58
+          name: 'Total Tx Bytes'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.25053.1.3.1.1.1.15.9.0
+          key: ruckusSystemStatsWLANTotalTxBytes
+          delay: 15m
+          trends: 800d
+          units: b
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+            -
+              type: MULTIPLIER
+              parameters:
+                - '8'
+          tags:
+            -
+              tag: Application
+              value: Traffic
+            -
+              tag: Application
+              value: Wireless
+        -
+          uuid: 5fcd0d21c30b4cd9b132d6ecbb7d880e
+          name: 'Total Tx Failed PPS'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.25053.1.3.1.1.1.15.11.0
+          key: ruckusSystemStatsWLANTotalTxFail
+          delay: 15m
+          trends: 800d
+          units: pps
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: Traffic
+            -
+              tag: Application
+              value: Wireless
+        -
+          uuid: 775203b6e1ff440e9dfb2f6c3150dd49
+          name: 'Total Tx Multicast PPS'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.25053.1.3.1.1.1.15.10.0
+          key: ruckusSystemStatsWLANTotalTxMulticast
+          delay: 15m
+          trends: 800d
+          units: pps
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: Traffic
+            -
+              tag: Application
+              value: Wireless
+        -
+          uuid: 3fba4c7a9e174afd83e25d99082db30c
+          name: 'Total Tx PPS'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.25053.1.3.1.1.1.15.8.0
+          key: ruckusSystemStatsWLANTotalTxPkts
+          delay: 15m
+          trends: 800d
+          units: pps
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: Traffic
+            -
+              tag: Application
+              value: Wireless
+        -
+          uuid: 980b7f33672047e781b45036f6a427eb
+          name: 'Total Tx Retry PPS'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.25053.1.3.1.1.1.15.12.0
+          key: ruckusSystemStatsWLANTotalTxRetry
+          delay: 15m
+          trends: 800d
+          units: pps
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: Traffic
+            -
+              tag: Application
+              value: Wireless
+      discovery_rules:
+        -
+          uuid: 9fd51b1134ec4e8a84b180bcb69a3e71
+          name: 'Ruckus SCG AP Table'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#APMAC},.1.3.6.1.4.1.25053.1.3.2.1.1.2.2.1.1,{#APZONE},.1.3.6.1.4.1.25053.1.3.2.1.1.2.2.1.3,{#APNAME}, .1.3.6.1.4.1.25053.1.3.2.1.1.2.2.1.5,{#DOMAIN},.1.3.6.1.4.1.25053.1.3.2.1.1.2.2.1.4,{#APGROUP},.1.3.6.1.4.1.25053.1.3.2.1.1.2.2.1.2]'
+          key: 'AP-[{#SNMPINDEX}]'
+          delay: 30m
+          lifetime: 7d
+          item_prototypes:
+            -
+              uuid: 095f5281738840549f2d68cabf89fc39
+              name: 'AP {#APZONE} - {#APNAME} Config Status'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.3.2.1.1.2.2.1.18.{#SNMPINDEX}'
+              key: 'ruckusSCGAPConfigStatus[{#SNMPINDEX}]'
+              delay: 5m
+              history: 30d
+              trends: '0'
+              value_type: CHAR
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: AP-Domain
+                  value: '{#DOMAIN}'
+                -
+                  tag: AP-Group
+                  value: '{#APGROUP}'
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+                -
+                  tag: Application
+                  value: Wireless
+            -
+              uuid: f93dc0ffa8ff4727823425eab00ad636
+              name: 'AP {#APZONE} - {#APNAME} Connection Status'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.3.2.1.1.2.2.1.16.{#SNMPINDEX}'
+              key: 'ruckusSCGAPConnStatus[{#SNMPINDEX}]'
+              delay: 5m
+              history: 30d
+              trends: '0'
+              value_type: CHAR
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: AP-Domain
+                  value: '{#DOMAIN}'
+                -
+                  tag: AP-Group
+                  value: '{#APGROUP}'
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+                -
+                  tag: Application
+                  value: Wireless
+            -
+              uuid: 56b4a4e217334540819f98130c1b6514
+              name: 'AP {#APZONE} - {#APNAME} Description'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.3.2.1.1.2.2.1.22.{#SNMPINDEX}'
+              key: 'ruckusSCGAPDescription[{#SNMPINDEX}]'
+              delay: 30m
+              history: 30d
+              trends: '0'
+              value_type: TEXT
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: AP-Domain
+                  value: '{#DOMAIN}'
+                -
+                  tag: AP-Group
+                  value: '{#APGROUP}'
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+                -
+                  tag: Application
+                  value: Wireless
+            -
+              uuid: 3c9b249dfb0f4a44a8e52e9e2381e3eb
+              name: 'AP {#APZONE} - {#APNAME} IP'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.25053.1.3.2.1.1.2.2.1.10.{#SNMPINDEX}'
+              key: 'ruckusSCGAPIp[{#SNMPINDEX}]'
+              delay: 30m
+              history: 30d
+              trends: '0'
+              value_type: TEXT
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: AP-Domain
+                  value: '{#DOMAIN}'
+                -
+                  tag: AP-Group
+                  value: '{#APGROUP}'
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+                -
+                  tag: Application
+                  value: Wireless
+            -
+              uuid: a2eea3ad409b41a38a675b6c88bfe815
+              name: 'AP {#APZONE} - {#APNAME} Location'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.25053.1.3.2.1.1.2.2.1.19.{#SNMPINDEX}'
+              key: 'ruckusSCGAPLocation[{#SNMPINDEX}]'
+              delay: 30m
+              history: 30d
+              trends: '0'
+              value_type: TEXT
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: AP-Domain
+                  value: '{#DOMAIN}'
+                -
+                  tag: AP-Group
+                  value: '{#APGROUP}'
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+                -
+                  tag: Application
+                  value: Wireless
+            -
+              uuid: 7c4305af6e9c4ffcb3ef59848bfa0c05
+              name: 'AP {#APZONE} - {#APNAME} Model'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.25053.1.3.2.1.1.2.2.1.8.{#SNMPINDEX}'
+              key: 'ruckusSCGAPModel[{#SNMPINDEX}]'
+              delay: 30m
+              history: 30d
+              trends: '0'
+              value_type: TEXT
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: AP-Domain
+                  value: '{#DOMAIN}'
+                -
+                  tag: AP-Group
+                  value: '{#APGROUP}'
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+                -
+                  tag: Application
+                  value: Wireless
+            -
+              uuid: 247c36798e454a3a804391ba1d8d268a
+              name: 'AP {#APZONE} - {#APNAME} Auth Clients'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.25053.1.3.2.1.1.2.2.1.15.{#SNMPINDEX}'
+              key: 'ruckusSCGAPNumSta[{#SNMPINDEX}]'
+              delay: 5m
+              trends: 732d
+              units: Users
+              description: 'Total number of authenticated terminal which is using currently on this AP.'
+              tags:
+                -
+                  tag: AP-Domain
+                  value: '{#DOMAIN}'
+                -
+                  tag: AP-Group
+                  value: '{#APGROUP}'
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+                -
+                  tag: Application
+                  value: Users
+                -
+                  tag: Application
+                  value: Wireless
+            -
+              uuid: 6c36c62667d04d54902ff7c9f587b4e4
+              name: 'AP {#APZONE} - {#APNAME} Registration Status'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.3.2.1.1.2.2.1.17.{#SNMPINDEX}'
+              key: 'ruckusSCGAPRegStatus[{#SNMPINDEX}]'
+              delay: 5m
+              history: 30d
+              trends: '0'
+              value_type: CHAR
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: AP-Domain
+                  value: '{#DOMAIN}'
+                -
+                  tag: AP-Group
+                  value: '{#APGROUP}'
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+                -
+                  tag: Application
+                  value: Wireless
+            -
+              uuid: adc41a051845415db8d1139185233a01
+              name: 'AP {#APZONE} - {#APNAME} Serial'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.25053.1.3.2.1.1.2.2.1.9.{#SNMPINDEX}'
+              key: 'ruckusSCGAPSerial[{#SNMPINDEX}]'
+              delay: 30m
+              history: 30d
+              trends: '0'
+              value_type: TEXT
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: AP-Domain
+                  value: '{#DOMAIN}'
+                -
+                  tag: AP-Group
+                  value: '{#APGROUP}'
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+                -
+                  tag: Application
+                  value: Wireless
+            -
+              uuid: cb27a9385d64402492b82a1419d34cec
+              name: 'AP {#APZONE} - {#APNAME} Uptime'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.3.2.1.1.2.2.1.6.{#SNMPINDEX}'
+              key: 'ruckusSCGAPUptime[{#SNMPINDEX}]'
+              delay: 5m
+              history: 30d
+              trends: '0'
+              value_type: FLOAT
+              units: uptime
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: AP-Domain
+                  value: '{#DOMAIN}'
+                -
+                  tag: AP-Group
+                  value: '{#APGROUP}'
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+                -
+                  tag: Application
+                  value: Wireless
+            -
+              uuid: 3ccf6cf73e5841edab2eefef81954f8a
+              name: 'AP {#APZONE} - {#APNAME} Mesh Role'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.25053.1.3.2.1.1.2.2.1.21.{#SNMPINDEX}'
+              key: 'ruckusZDWLANAPStatus[{#SNMPINDEX}]'
+              delay: 30m
+              history: 30d
+              trends: '0'
+              value_type: CHAR
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: AP-Domain
+                  value: '{#DOMAIN}'
+                -
+                  tag: AP-Group
+                  value: '{#APGROUP}'
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+                -
+                  tag: Application
+                  value: Wireless
+          graph_prototypes:
+            -
+              uuid: 989849aeb13f4f90b3da754145631b7e
+              name: 'Zone: {#APZONE} AP: {#APNAME} Total Clients'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: FFBF00
+                  item:
+                    host: 'NCZ Ruckus SmartZone by SNMPv2'
+                    key: 'ruckusSCGAPNumSta[{#SNMPINDEX}]'
+        -
+          uuid: a9de5c64aa59400e8d7d8b2dab88252c
+          name: 'Ruckus CTRL Domain Table'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#DOMAINID},.1.3.6.1.4.1.25053.1.8.1.1.1.1.2.1.1,{#DOMAIN},.1.3.6.1.4.1.25053.1.8.1.1.1.1.2.1.2,{#NUMZONE}, .1.3.6.1.4.1.25053.1.8.1.1.1.1.2.1.9]'
+          key: 'Domain-[{#DOMAINID}]'
+          delay: 30m
+          filter:
+            conditions:
+              -
+                macro: '{#NUMZONE}'
+                value: '^[1-9][0-9]*$'
+                formulaid: A
+          item_prototypes:
+            -
+              uuid: a380a395868343e9b71cba19b2b3206d
+              name: 'Domain {#DOMAIN} Number Clients'
+              type: CALCULATED
+              key: 'ruckusCtrlDomainNumSta[{#SNMPINDEX}]'
+              delay: 5m
+              trends: 732d
+              params: 'sum(last_foreach(//ruckusSCGAPNumSta[*]?[tag="AP-Domain:{#DOMAIN}"]))'
+              tags:
+                -
+                  tag: AP-Domain
+                  value: '{#DOMAIN}'
+          graph_prototypes:
+            -
+              uuid: 5736e298781c46bbaca62fbe02a1a802
+              name: 'Domain {#DOMAIN} Numer Clients'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: FF0080
+                  item:
+                    host: 'NCZ Ruckus SmartZone by SNMPv2'
+                    key: 'ruckusCtrlDomainNumSta[{#SNMPINDEX}]'
+        -
+          uuid: bce73c782f24419590a682f94123b51f
+          name: 'Ruckus CTRL Node Table'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#NODENAME},.1.3.6.1.4.1.25053.1.8.1.1.1.1.1.1.2,{#NODEMODEL}, .1.3.6.1.4.1.25053.1.8.1.1.1.1.1.1.3]'
+          key: 'Node-[{#DOMAINID}]'
+          delay: 30m
+          item_prototypes:
+            -
+              uuid: 2404eef491b7489ab0c474daefc3c4a5
+              name: 'Node {#NODEMODEL} - {#NODENAME}: Cluster Status'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.8.1.1.1.1.1.1.18.{#SNMPINDEX}'
+              key: 'ruckusCtrlSystemClusterStatus[{#SNMPINDEX}]'
+              delay: 5m
+              trends: '0'
+              valuemap:
+                name: ruckusSystemClusterStatus
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+            -
+              uuid: 118a450116f147e991416c202275c9e0
+              name: 'Node {#NODEMODEL} - {#NODENAME}: Num AP Connected'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.8.1.1.1.1.1.1.19.{#SNMPINDEX}'
+              key: 'ruckusCtrlSystemNodeNumApConnected[{#SNMPINDEX}]'
+              delay: 5m
+              trends: '0'
+            -
+              uuid: e87a82bdf32e4f75b2db19ca9c9b942a
+              name: 'Node {#NODEMODEL} - {#NODENAME}: AP License'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.8.1.1.1.1.1.1.10.{#SNMPINDEX}'
+              key: 'ruckusCtrlSystemNodeNumApLicense[{#SNMPINDEX}]'
+              delay: 30m
+              trends: '0'
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+            -
+              uuid: 67699dd5b4eb4b17b10ae89202157017
+              name: 'Node {#NODEMODEL} - {#NODENAME}: Serial'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.8.1.1.1.1.1.1.1.{#SNMPINDEX}'
+              key: 'ruckusCtrlSystemNodeSerialNumber[{#SNMPINDEX}]'
+              delay: 30m
+              trends: '0'
+              value_type: TEXT
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+            -
+              uuid: 140363cc972547b589e394e20d5adfb1
+              name: 'Node {#NODEMODEL} - {#NODENAME}: Node Status'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.8.1.1.1.1.1.1.17.{#SNMPINDEX}'
+              key: 'ruckusCtrlSystemNodeStatus[{#SNMPINDEX}]'
+              delay: 5m
+              trends: '0'
+              valuemap:
+                name: grafanaruckusSystemNodeStatus
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+            -
+              uuid: c52b6618bbc84664a962649ecd51eba2
+              name: 'Node {#NODEMODEL} - {#NODENAME}: Uptime'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.8.1.1.1.1.1.1.16.{#SNMPINDEX}'
+              key: 'ruckusCtrlSystemNodeUptime[{#SNMPINDEX}]'
+              delay: 5m
+              trends: '0'
+              value_type: FLOAT
+              units: uptime
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+            -
+              uuid: d09216b07aee439c94064193db7d3fdb
+              name: 'Node {#NODEMODEL} - {#NODENAME}: Version'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.8.1.1.1.1.1.1.9.{#SNMPINDEX}'
+              key: 'ruckusCtrlSystemNodeVersion[{#SNMPINDEX}]'
+              delay: 30m
+              trends: '0'
+              value_type: TEXT
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+        -
+          uuid: 3498eaac3af14e958a28301f953677da
+          name: 'Ruckus SCG WLAN Table'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},.1.3.6.1.4.1.25053.1.3.2.1.1.1.2.1.99,{#SSID},.1.3.6.1.4.1.25053.1.3.2.1.1.1.2.1.1,{#APZONE},.1.3.6.1.4.1.25053.1.3.2.1.1.1.2.1.2]'
+          key: 'ssid-[{#SNMPVALUE}]'
+          delay: 30m
+          lifetime: 90d
+          item_prototypes:
+            -
+              uuid: 873e5ddfcac3499d89809e3bf46b1bcc
+              name: 'SSID {#APZONE} - {#SSID} Auth Type'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.3.2.1.1.1.2.1.17.{#SNMPINDEX}'
+              key: 'ruckusSCGWLANAuthType[{#SNMPVALUE}]'
+              delay: 15m
+              trends: '0'
+              value_type: TEXT
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+                -
+                  tag: Application
+                  value: Wireless
+            -
+              uuid: 8508c2bef11e4c5db32a1a01e0a95cd9
+              name: 'SSID {#APZONE} - {#SSID} Clients'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.3.2.1.1.1.2.1.12.{#SNMPINDEX}'
+              key: 'ruckusSCGWLANNumSta[{#SNMPVALUE}]'
+              delay: 5m
+              trends: 732d
+              tags:
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+                -
+                  tag: Application
+                  value: SSID
+                -
+                  tag: Application
+                  value: Users
+                -
+                  tag: Application
+                  value: Wireless
+            -
+              uuid: ea636f2db295405896b0135691ec6b0a
+              name: 'SSID {#APZONE} - {#SSID} Rx Bytes'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.3.2.1.1.1.2.1.14.{#SNMPINDEX}'
+              key: 'ruckusSCGWLANRxBytes[{#SNMPVALUE}]'
+              delay: 15m
+              trends: 732d
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+                -
+                  tag: Application
+                  value: Traffic
+                -
+                  tag: Application
+                  value: Wireless
+            -
+              uuid: d2167b81cfb34d1084d239b805cab320
+              name: 'SSID {#APZONE} - {#SSID} Tx Bytes'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.3.2.1.1.1.2.1.16.{#SNMPINDEX}'
+              key: 'ruckusSCGWLANTxBytes[{#SNMPVALUE}]'
+              delay: 15m
+              trends: 732d
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+                -
+                  tag: Application
+                  value: Traffic
+                -
+                  tag: Application
+                  value: Wireless
+          graph_prototypes:
+            -
+              uuid: 075bb40bd791432e836c14427b22d431
+              name: 'Zone: {#APZONE} SSID: {#SSID} Total Clients'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: FFBF00
+                  item:
+                    host: 'NCZ Ruckus SmartZone by SNMPv2'
+                    key: 'ruckusSCGWLANNumSta[{#SNMPVALUE}]'
+            -
+              uuid: 5bce9a065dee415c9f5591deebc91f97
+              name: 'Zone: {#APZONE} SSID: {#SSID} Total Traffic'
+              graph_items:
+                -
+                  sortorder: '1'
+                  drawtype: BOLD_LINE
+                  color: 80FF00
+                  item:
+                    host: 'NCZ Ruckus SmartZone by SNMPv2'
+                    key: 'ruckusSCGWLANRxBytes[{#SNMPVALUE}]'
+                -
+                  sortorder: '2'
+                  drawtype: BOLD_LINE
+                  color: 0040FF
+                  item:
+                    host: 'NCZ Ruckus SmartZone by SNMPv2'
+                    key: 'ruckusSCGWLANTxBytes[{#SNMPVALUE}]'
+        -
+          uuid: 3cfc4ee65b914069a082f663f8a561e6
+          name: 'Ruckus CTRL Zone Table'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#ZONEID}, .1.3.6.1.4.1.25053.1.8.1.1.1.1.3.1.2,{#APZONE}, .1.3.6.1.4.1.25053.1.8.1.1.1.1.3.1.3]'
+          key: 'Zone-[{#ZONEID}]'
+          delay: 30m
+          item_prototypes:
+            -
+              uuid: e1f476c2671444bb8f3ab86c574e58b2
+              name: 'Zone {#APZONE} Connected APs'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.8.1.1.1.1.3.1.9.{#SNMPINDEX}'
+              key: 'ruckusCtrlZoneNumApConnected[{#SNMPINDEX}]'
+              delay: 5m
+              trends: 732d
+              tags:
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+            -
+              uuid: 508e800a59184a8185edf4049c90139a
+              name: 'Zone {#APZONE} Disconnected APs'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.25053.1.8.1.1.1.1.3.1.10.{#SNMPINDEX}'
+              key: 'ruckusCtrlZoneNumApDisconnected[{#SNMPINDEX}]'
+              delay: 5m
+              trends: 732d
+              tags:
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+              trigger_prototypes:
+                -
+                  uuid: 61121ac26b15400d9fc84ae4073193bb
+                  expression: 'avg(/NCZ Ruckus SmartZone by SNMPv2/ruckusCtrlZoneNumApDisconnected[{#SNMPINDEX}],30m)>=1'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'last(/NCZ Ruckus SmartZone by SNMPv2/ruckusCtrlZoneNumApDisconnected[{#SNMPINDEX}])=0'
+                  name: 'Zone {#APZONE} has offline APs'
+                  opdata: '{ITEM.LASTVALUE1} APs offline'
+                  priority: AVERAGE
+                  description: 'This zone has had disconnected APs for more than 30 minutes.'
+                  manual_close: 'YES'
+            -
+              uuid: e8035ab40c4c447b96192a24e2357560
+              name: 'Zone {#APZONE} Number Clients'
+              type: CALCULATED
+              key: 'ruckusCtrlZoneNumSta[{#SNMPINDEX}]'
+              delay: 5m
+              trends: 732d
+              params: 'sum(last_foreach(//ruckusSCGAPNumSta[*]?[tag="AP-Zone:{#APZONE}"]))'
+              tags:
+                -
+                  tag: AP-Zone
+                  value: '{#APZONE}'
+      tags:
+        -
+          tag: class
+          value: software
+        -
+          tag: target
+          value: ruckus
+      valuemaps:
+        -
+          uuid: 02b86945bdcf4ea78b940de656b0c9c0
+          name: grafanaruckusSystemNodeStatus
+          mappings:
+            -
+              value: '0'
+              newvalue: 'Out of Service'
+            -
+              value: '8'
+              newvalue: 'In Service'
+        -
+          uuid: 07010aaa05844b2bb82ece8721994d4e
+          name: ruckusSystemClusterStatus
+          mappings:
+            -
+              value: '0'
+              newvalue: 'In Service'
+            -
+              value: '1'
+              newvalue: 'Out of Service'
+            -
+              value: '2'
+              newvalue: Maintenance
+            -
+              value: '4'
+              newvalue: 'Network Partioned'
+  graphs:
+    -
+      uuid: da07ab52080041c686ea122ce33555f7
+      name: 'Total APs'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 00FFFF
+          item:
+            host: 'NCZ Ruckus SmartZone by SNMPv2'
+            key: ruckusSystemStatsNumAP
+    -
+      uuid: 837a3e2df3574fa58628737e328dc5e9
+      name: 'Total Cients'
+      graph_items:
+        -
+          sortorder: '1'
+          color: FFBF00
+          item:
+            host: 'NCZ Ruckus SmartZone by SNMPv2'
+            key: ruckusSystemStatsNumSta
+    -
+      uuid: d45eba4490424b1c9600cc132e87872d
+      name: 'Total Wireless Traffic'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 0040FF
+          item:
+            host: 'NCZ Ruckus SmartZone by SNMPv2'
+            key: ruckusSystemStatsWLANTotalRxBytes
+        -
+          sortorder: '2'
+          color: 00FF00
+          item:
+            host: 'NCZ Ruckus SmartZone by SNMPv2'
+            key: ruckusSystemStatsWLANTotalTxBytes

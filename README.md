@@ -18,3 +18,10 @@ Tested with Zabbix 5.4, assorted Cisco Catalyst switches IOS 12.2, 15.0, 15.2 IO
 Template for monitoring Spanning Tree and Forwarding Database status in Cisco IOS network devices using BRIDGE-MIB and CISCO-STP-EXTENSIONS-MIB
 
 Tested with Zabbix 5.4, assorted Cisco Catalyst switches IOS 12.2, 15.0, 15.2 IOSXE 17.3
+
+## [NCZ Ruckus SmartZone by SNMPv2](template_ncz_ruckus_smartzone_by_snmpv2/)
+Template for monitoring Ruckus SmartZone Wireless Controller 
+
+Tested with Zabbix 5.4, Ruckus SmartZone vSZ-H 5.2, 6.1
+
+
