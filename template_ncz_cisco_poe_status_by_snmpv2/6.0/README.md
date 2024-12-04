@@ -2,7 +2,7 @@
 ## Overview
 Template for monitoring PoE and Power Sourcing Entities (PSE) on Cisco IOS network devices using POWER-ETHERNET-MIB and CISCO-POWER-ETHERNET-EXT
 
-Tested with Zabbix 5.4, assorted Cisco Catalyst switches IOS 12.2, 15.0, 15.2 IOSXE 17.3
+Tested with Zabbix 6.0, assorted Cisco Catalyst switches IOS 12.2, 15.0, 15.2 IOSXE 17.3
 
 ## Zabbix configuration
 
