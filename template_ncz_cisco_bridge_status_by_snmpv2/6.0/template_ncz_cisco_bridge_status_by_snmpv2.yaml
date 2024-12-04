@@ -1,0 +1,204 @@
+zabbix_export:
+  version: '6.0'
+  date: '2024-12-04T00:48:37Z'
+  groups:
+    - uuid: 4918b88734c54bd094cff7585b5d71fc
+      name: 'Templates/Network Devices'
+  templates:
+    - uuid: fc1fb9cdc4934e5aa3bf1df31c61b486
+      template: 'NCZ Cisco Bridge Status by SNMPv2'
+      name: 'NCZ Cisco Bridge Status by SNMPv2'
+      description: |
+        Template for monitoring Spanning Tree and Forwarding Database status in Cisco IOS network devices using BRIDGE-MIB and CISCO-STP-EXTENSIONS-MIB
+        
+        Tested with Zabbix 6.0, assorted Cisco Catalyst switches IOS 12.2, 15.0, 15.2 IOSXE 17.3
+      groups:
+        - name: 'Templates/Network Devices'
+      items:
+        - uuid: c47928a276034aa1a45494b37ff7b689
+          name: 'Spanning Tree Designated Root'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.17.2.5.0
+          key: dot1dStpDesignatedRoot
+          delay: 5m
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - '7200'
+          tags:
+            - tag: Application
+              value: STP
+          triggers:
+            - uuid: cd6c338b565b45cbb8e3a762d50c96b1
+              expression: 'change(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpDesignatedRoot)>0'
+              recovery_mode: NONE
+              name: 'Spanning Tree Root Bridge has changed'
+              priority: WARNING
+              description: |
+                The Spanning Tree Root Bridge has changed, likely indicating a major spanning tree change event has occurred. 
+                Ack to close.
+              manual_close: 'YES'
+              dependencies:
+                - name: 'Spanning Tree Bridge Port has changed.'
+                  expression: 'change(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpRootPort)>0'
+                - name: 'This device is not Root Bridge but has primary priority'
+                  expression: 'last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpRootPort)<>0 and ((last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpPriorityReal) = 4096) or (last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpPriorityReal) = 24567))'
+                - name: 'This device is the Root Bridge but does not have primary priority'
+                  expression: 'last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpRootPort)=0 and ((last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpPriorityReal) <> 4096) and (last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpPriorityReal) <> 24576))'
+              tags:
+                - tag: Application
+                  value: STP
+        - uuid: c2c9ad418cd1418c98ce50a0324e7139
+          name: 'Spanning Tree Priority Raw'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.17.2.2.0
+          key: dot1dStpPriority
+          delay: 15m
+          history: 7d
+          trends: '0'
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - '7200'
+          tags:
+            - tag: Application
+              value: STP
+        - uuid: 52c94adfbe3f4ab69aa70fa4695a0d65
+          name: 'Spanning Tree Priority'
+          type: CALCULATED
+          key: dot1dStpPriorityReal
+          delay: 15m
+          history: 7d
+          trends: '0'
+          params: 'last(//dot1dStpPriority)-{$STP_VLANID}'
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - '7200'
+          tags:
+            - tag: Application
+              value: STP
+        - uuid: 3bc0f980f9ef496a844c3f9802f06fc5
+          name: 'Spanning Tree Root Port'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.17.2.7.0
+          key: dot1dStpRootPort
+          delay: 5m
+          history: 7d
+          trends: '0'
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - '7200'
+          tags:
+            - tag: Application
+              value: STP
+          triggers:
+            - uuid: 681cab0a5b92444f9f5994166d852d35
+              expression: 'change(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpRootPort)>0'
+              recovery_mode: NONE
+              name: 'Spanning Tree Bridge Port has changed.'
+              priority: INFO
+              description: |
+                The bridge port (uplink) on the switch has changed, indicating a spanning tree change event has occurred. 
+                Ack to close.
+              manual_close: 'YES'
+              dependencies:
+                - name: 'This device is not Root Bridge but has primary priority'
+                  expression: 'last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpRootPort)<>0 and ((last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpPriorityReal) = 4096) or (last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpPriorityReal) = 24567))'
+                - name: 'This device is the Root Bridge but does not have primary priority'
+                  expression: 'last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpRootPort)=0 and ((last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpPriorityReal) <> 4096) and (last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpPriorityReal) <> 24576))'
+              tags:
+                - tag: Application
+                  value: STP
+        - uuid: 9029d3ce406c4b12beaf3b721090002a
+          name: 'TP Forward Discards Rate'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.17.4.1.0
+          key: dot1dTpLearnedEntryDiscards
+          delay: 5m
+          history: 7d
+          trends: '0'
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            - tag: Application
+              value: STP
+          triggers:
+            - uuid: 7a9371328c4541e3a22b97743de0731d
+              expression: 'avg(/NCZ Cisco Bridge Status by SNMPv2/dot1dTpLearnedEntryDiscards,15m)>0'
+              name: 'The Forwarding Database is discarding entries'
+              priority: AVERAGE
+              description: 'Learned Entries (MAC addresses) are being discarded from the Forwarding Database due to a lack of available storage space.'
+              tags:
+                - tag: Application
+                  value: STP
+        - uuid: f70aa03e6d0e496baa1a4d1cbb3cda0a
+          name: 'Spanning Tree Type'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.9.9.82.1.6.1.0
+          key: stpxSpanningTreeType
+          delay: 15m
+          history: 7d
+          trends: '0'
+          valuemap:
+            name: stpxSpanningTreeType
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - '7200'
+          tags:
+            - tag: Application
+              value: STP
+      tags:
+        - tag: class
+          value: network
+        - tag: target
+          value: cisco
+      macros:
+        - macro: '{$STP_VLANID}'
+          value: '1'
+      valuemaps:
+        - uuid: 531701124af344a6a397e03a1caa8427
+          name: stpxSpanningTreeType
+          mappings:
+            - value: '1'
+              newvalue: pvstPlus
+            - value: '2'
+              newvalue: mistp
+            - value: '3'
+              newvalue: mistpPvstPlus
+            - value: '4'
+              newvalue: mst
+            - value: '5'
+              newvalue: rapidPvstPlus
+  triggers:
+    - uuid: 0c0433cd84da4549871092249a15745c
+      expression: 'last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpRootPort)<>0 and ((last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpPriorityReal) = 4096) or (last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpPriorityReal) = 24567))'
+      recovery_mode: NONE
+      name: 'This device is not Root Bridge but has primary priority'
+      opdata: '{ITEM.LASTVALUE2} Priority'
+      priority: WARNING
+      description: |
+        This device is not acting as the Root Bridge however it has been configured with a priority of 4096 or 'primary' which means there is a network misconfiguration issue.
+        Ack to close.
+      manual_close: 'YES'
+      tags:
+        - tag: Application
+          value: STP
+    - uuid: caa58ecc9872452dad24549315beba31
+      expression: 'last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpRootPort)=0 and ((last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpPriorityReal) <> 4096) and (last(/NCZ Cisco Bridge Status by SNMPv2/dot1dStpPriorityReal) <> 24576))'
+      recovery_mode: NONE
+      name: 'This device is the Root Bridge but does not have primary priority'
+      opdata: '{ITEM.LASTVALUE2} Priority'
+      priority: WARNING
+      description: 'This device is acting as a Root Bridge however it has not been configured with a priority of 4096 or ''primary'' which means it is not the intended Root Bridge or the network has been misconfigured.'
+      manual_close: 'YES'
+      tags:
+        - tag: Application
+          value: STP
