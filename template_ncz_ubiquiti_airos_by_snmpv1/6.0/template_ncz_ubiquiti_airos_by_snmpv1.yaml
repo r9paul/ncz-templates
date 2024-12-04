@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-12-04T00:39:28Z'
+  date: '2024-12-04T19:56:49Z'
   groups:
     - uuid: 36bff6c29af64692839d077febfc7079
       name: 'Templates/Network devices'
@@ -8,6 +8,10 @@ zabbix_export:
     - uuid: e917e255451847dd887d661f3ece112a
       template: 'NCZ Ubiquiti AirOS by SNMPv1'
       name: 'NCZ Ubiquiti AirOS by SNMPv1'
+      description: |
+        Template for monitoring Ubiquiti 5GHz Wireless Link equipment. 
+        
+        Tested with Zabbix 6.0, Ubiquiti aiMAX Lite AP GPS, airMAX NanoStation AP firmwares 8.7.12, 8.7.14
       groups:
         - name: 'Templates/Network devices'
       items:
@@ -26,7 +30,7 @@ zabbix_export:
               value: network
           triggers:
             - uuid: 99978e61de894f6ba7272c09f31a6df2
-              expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/icmpping,#3)=0'
+              expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/icmpping,30s)=0'
               name: 'Unavailable by ICMP ping'
               priority: HIGH
               description: |
@@ -56,7 +60,7 @@ zabbix_export:
               description: 'Last value: {ITEM.LASTVALUE1}.'
               dependencies:
                 - name: 'Unavailable by ICMP ping'
-                  expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/icmpping,#3)=0'
+                  expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/icmpping,30s)=0'
               tags:
                 - tag: scope
                   value: availability
@@ -84,7 +88,7 @@ zabbix_export:
                 - name: 'High ICMP ping loss'
                   expression: 'min(/NCZ Ubiquiti AirOS by SNMPv1/icmppingloss,5m)>{$ICMP_LOSS_WARN} and min(/NCZ Ubiquiti AirOS by SNMPv1/icmppingloss,5m)<100'
                 - name: 'Unavailable by ICMP ping'
-                  expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/icmpping,#3)=0'
+                  expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/icmpping,30s)=0'
               tags:
                 - tag: scope
                   value: availability
@@ -385,7 +389,7 @@ zabbix_export:
                 SNMP is not available for polling. Please check device connectivity and SNMP settings.
               dependencies:
                 - name: 'Unavailable by ICMP ping'
-                  expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/icmpping,#3)=0'
+                  expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/icmpping,30s)=0'
               tags:
                 - tag: scope
                   value: availability
