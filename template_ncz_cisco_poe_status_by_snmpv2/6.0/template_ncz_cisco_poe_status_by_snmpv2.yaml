@@ -1,0 +1,502 @@
+zabbix_export:
+  version: '6.0'
+  date: '2024-12-04T00:49:39Z'
+  groups:
+    - uuid: 4918b88734c54bd094cff7585b5d71fc
+      name: 'Templates/Network Devices'
+  templates:
+    - uuid: 613b3ade9cb34c0f94ea0e1d343a7c04
+      template: 'NCZ Cisco PoE Status by SNMPv2'
+      name: 'NCZ Cisco PoE Status by SNMPv2'
+      description: |
+        Template for monitoring PoE and Power Sourcing Entities (PSE) on Cisco IOS network devices using POWER-ETHERNET-MIB and CISCO-POWER-ETHERNET-EXT
+        
+        Tested with Zabbix 5.4, assorted Cisco Catalyst switches IOS 12.2, 15.0, 15.2 IOSXE 17.3
+      groups:
+        - name: 'Templates/Network Devices'
+      items:
+        - uuid: 2245ae6d71df423486c696803b8fc2df
+          name: 'Device Total Allocated Power'
+          type: CALCULATED
+          key: pethMainPseAllocatedPowerTotal
+          delay: 5m
+          history: 30d
+          units: W
+          params: 'sum(last_foreach(//pethMainPseAllocatedPower[*]))'
+          description: 'Total PoE budget allocated on the device'
+          tags:
+            - tag: Application
+              value: PoE
+        - uuid: 86356f778a0a44359a94d74eb7c1b21b
+          name: 'Device Total Consumed Power'
+          type: CALCULATED
+          key: pethMainPseConsumptionPowerTotal
+          delay: 5m
+          history: 30d
+          units: W
+          params: 'sum(last_foreach(//pethMainPseConsumptionPower[*]))'
+          description: 'Total PoE power actual draw on the device'
+          tags:
+            - tag: Application
+              value: PoE
+        - uuid: f37e38a44da748fab04f201f295773ca
+          name: 'Device Total Free Power'
+          type: CALCULATED
+          key: pethMainPseFreePowerTotal
+          delay: 5m
+          history: 30d
+          units: W
+          params: 'sum(last_foreach(//pethMainPseFreePower[*]))'
+          description: 'Total PoE budget remaining for the device including all units/modules (PSE)'
+          tags:
+            - tag: Application
+              value: PoE
+        - uuid: d46f1e40907c41159581d9747f1313e4
+          name: 'Device Total Connected PD'
+          type: CALCULATED
+          key: pethMainPsePDCountTotal
+          delay: 5m
+          history: 30d
+          units: W
+          params: 'sum(last_foreach(//pethMainPsePDCount[*]))'
+          description: 'Total PoE budget for the device including all units/modules (PSE)'
+          tags:
+            - tag: Application
+              value: PoE
+        - uuid: 4270e55dc6ee452da1d946ded070ba34
+          name: 'Device Total Nominal Power'
+          type: CALCULATED
+          key: pethMainPsePowerTotal
+          delay: 5m
+          history: 30d
+          units: W
+          params: 'sum(last_foreach(//pethMainPsePower[*]))'
+          description: 'Total PoE budget for the device including all units/modules (PSE)'
+          tags:
+            - tag: Application
+              value: PoE
+      discovery_rules:
+        - uuid: d7c9072685534e448cadf7f094215c50
+          name: 'PoE Ports'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},.1.3.6.1.4.1.9.9.402.1.2.1.11,{#IFACE},.1.3.6.1.4.1.9.9.402.1.2.1.11]'
+          key: snmp.discoverypoe.ports
+          delay: 1h
+          item_prototypes:
+            - uuid: 530d5f3274934761953d0361d67bd643
+              name: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")} Power: Device Detected'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.9.9.402.1.2.1.3.{#SNMPINDEX}'
+              key: 'cpeExtPsePortDeviceDetected[{#SNMPINDEX}]'
+              delay: 5m
+              history: 30d
+              trends: '0'
+              preprocessing:
+                - type: IN_RANGE
+                  parameters:
+                    - '1'
+                    - '1'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              tags:
+                - tag: Application
+                  value: PoE
+                - tag: PoE-Group
+                  value: '{{#SNMPINDEX}.regsub("[0-9]+", \0)}'
+                - tag: PoE-Port
+                  value: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")}'
+            - uuid: 7c0bcd7a80d24205b700bb7f8242e14c
+              name: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")} Power: Link Description'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.47.1.1.1.1.2.{#IFACE}'
+              key: 'cpeExtPsePortLinkDesc[{#SNMPINDEX}]'
+              delay: 1h
+              history: 7d
+              trends: '0'
+              value_type: TEXT
+              tags:
+                - tag: Application
+                  value: PoE
+                - tag: PoE-Group
+                  value: '{{#SNMPINDEX}.regsub("[0-9]+", \0)}'
+                - tag: PoE-Port
+                  value: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")}'
+            - uuid: 201aca88179e42da92ec4870adbfb97d
+              name: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")} Power: Allocated'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.9.9.402.1.2.1.7.{#SNMPINDEX}'
+              key: 'cpeExtPsePortPwrAllocated[{#SNMPINDEX}]'
+              delay: 5m
+              history: 30d
+              trends: 180d
+              value_type: FLOAT
+              units: W
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '{$PSE_VALUE_SCALE}'
+              tags:
+                - tag: Application
+                  value: PoE
+                - tag: PoE-Group
+                  value: '{{#SNMPINDEX}.regsub("[0-9]+", \0)}'
+                - tag: PoE-Port
+                  value: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")}'
+            - uuid: 7b0c639bcce14a9a98012a29d605b4e0
+              name: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")} Power: Consumption'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.9.9.402.1.2.1.9.{#SNMPINDEX}'
+              key: 'cpeExtPsePortPwrConsumption[{#SNMPINDEX}]'
+              delay: 5m
+              history: 30d
+              trends: 180d
+              value_type: FLOAT
+              units: W
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '{$PSE_VALUE_SCALE}'
+              tags:
+                - tag: Application
+                  value: PoE
+                - tag: PoE-Group
+                  value: '{{#SNMPINDEX}.regsub("[0-9]+", \0)}'
+                - tag: PoE-Port
+                  value: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")}'
+            - uuid: 99e30baa208243fd9a4fbfdcda595f6a
+              name: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")} Power: Max Available'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.9.9.402.1.2.1.6.{#SNMPINDEX}'
+              key: 'cpeExtPsePortPwrMax[{#SNMPINDEX}]'
+              delay: 1h
+              history: 7d
+              trends: '0'
+              value_type: FLOAT
+              units: W
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '{$PSE_VALUE_SCALE}'
+              tags:
+                - tag: Application
+                  value: PoE
+                - tag: PoE-Group
+                  value: '{{#SNMPINDEX}.regsub("[0-9]+", \0)}'
+                - tag: PoE-Port
+                  value: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")}'
+            - uuid: 2961a107ed834385849b828ab4e08e37
+              name: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")} Power: Status'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.105.1.1.1.6.{#SNMPINDEX}'
+              key: 'pethPsePortDetectionStatus[{#SNMPINDEX}]'
+              delay: 5m
+              history: 30d
+              trends: '0'
+              valuemap:
+                name: pethPsePortDetectionStatus
+              tags:
+                - tag: Application
+                  value: PoE
+                - tag: PoE-Group
+                  value: '{{#SNMPINDEX}.regsub("[0-9]+", \0)}'
+                - tag: PoE-Port
+                  value: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")}'
+              trigger_prototypes:
+                - uuid: cb01087061a64f648227227db71017f7
+                  expression: 'last(/NCZ Cisco PoE Status by SNMPv2/pethPsePortDetectionStatus[{#SNMPINDEX}])=4 or last(/NCZ Cisco PoE Status by SNMPv2/pethPsePortDetectionStatus[{#SNMPINDEX}])=6'
+                  name: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")} Power Status is Faulty'
+                  priority: INFO
+                  description: 'The delivering power status of the port is reporting as faulty, likely indicating a PoE fault.'
+                  manual_close: 'YES'
+                  tags:
+                    - tag: Application
+                      value: PoE
+            - uuid: fddfae61a2d74cc794e5ff1ee02fb12a
+              name: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")} Power: Device'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.105.1.1.1.9.{#SNMPINDEX}'
+              key: 'pethPsePortType[{#SNMPINDEX}]'
+              delay: 5m
+              history: 30d
+              trends: '0'
+              value_type: TEXT
+              tags:
+                - tag: Application
+                  value: PoE
+                - tag: PoE-Group
+                  value: '{{#SNMPINDEX}.regsub("[0-9]+", \0)}'
+                - tag: PoE-Port
+                  value: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")}'
+          trigger_prototypes:
+            - uuid: f9505b151549404b885d6bddd823f7aa
+              expression: '(change(/NCZ Cisco PoE Status by SNMPv2/pethPsePortType[{#SNMPINDEX}])=1) and (max(/NCZ Cisco PoE Status by SNMPv2/pethPsePortDetectionStatus[{#SNMPINDEX}],#5)-min(/NCZ Cisco PoE Status by SNMPv2/pethPsePortDetectionStatus[{#SNMPINDEX}],#5)=0) and (last(/NCZ Cisco PoE Status by SNMPv2/pethPsePortDetectionStatus[{#SNMPINDEX}])=3)'
+              name: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")} Connected PD device has changed'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: INFO
+              description: |
+                The device connected to a PoE power has changed.
+                Ack to close this alert manually.
+              manual_close: 'YES'
+              dependencies:
+                - name: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")} Power Status is Faulty'
+                  expression: 'last(/NCZ Cisco PoE Status by SNMPv2/pethPsePortDetectionStatus[{#SNMPINDEX}])=4 or last(/NCZ Cisco PoE Status by SNMPv2/pethPsePortDetectionStatus[{#SNMPINDEX}])=6'
+              tags:
+                - tag: Application
+                  value: PoE
+            - uuid: bbc8ece971d24d2a8f2245b175619a4a
+              expression: '(last(/NCZ Cisco PoE Status by SNMPv2/cpeExtPsePortDeviceDetected[{#SNMPINDEX}])=1) and (last(/NCZ Cisco PoE Status by SNMPv2/pethPsePortDetectionStatus[{#SNMPINDEX}])<>3) and (not nodata(/NCZ Cisco PoE Status by SNMPv2/pethPsePortDetectionStatus[{#SNMPINDEX}],2h))'
+              name: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")} Power: PD Detected but not being powered'
+              priority: INFO
+              description: 'This could be due to a fault condition or a lack of available power.'
+              dependencies:
+                - name: '{{#SNMPINDEX}.regsub("([0-9])+", "Unit \1")} {{#SNMPINDEX}.regsub("\.([0-9]+)", "Port \1")} Power Status is Faulty'
+                  expression: 'last(/NCZ Cisco PoE Status by SNMPv2/pethPsePortDetectionStatus[{#SNMPINDEX}])=4 or last(/NCZ Cisco PoE Status by SNMPv2/pethPsePortDetectionStatus[{#SNMPINDEX}])=6'
+        - uuid: 0f65196b9d0d45949533c8340c0493e4
+          name: 'PSE Discovery'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},.1.3.6.1.4.1.9.9.402.1.3.1.2,{#CAPABLE}, .1.3.6.1.4.1.9.9.402.1.3.1.3]'
+          key: snmp.discoverypoe.units
+          delay: 1h
+          filter:
+            conditions:
+              - macro: '{#CAPABLE}'
+                value: '1'
+                formulaid: A
+          item_prototypes:
+            - uuid: 6b93a04ae85241b98959b61ff926d23b
+              name: 'PSE {#SNMPVALUE} #{#SNMPINDEX}: Allocated Power'
+              type: CALCULATED
+              key: 'pethMainPseAllocatedPower[{#SNMPINDEX}]'
+              delay: 5m
+              units: W
+              params: 'sum(last_foreach(//cpeExtPsePortPwrAllocated[*]?[tag="PoE-Group:{#SNMPINDEX}"]))'
+              description: 'This is allocated power, calculated from the sum of allocated port powers on this PSE (since not all platforms support polling this value directly).'
+              preprocessing:
+                - type: CHECK_NOT_SUPPORTED
+                  parameters:
+                    - ''
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              tags:
+                - tag: Application
+                  value: PoE
+                - tag: PoE-Group
+                  value: '{#SNMPINDEX}'
+            - uuid: a43560e1e5fa45738f6e5a60f5b719d7
+              name: 'PSE {#SNMPVALUE} #{#SNMPINDEX}: Consumption Power'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.105.1.3.1.1.4.{#SNMPINDEX}'
+              key: 'pethMainPseConsumptionPower[{#SNMPINDEX}]'
+              delay: 5m
+              history: 30d
+              units: W
+              description: 'This is real consumption by the power supply, as opposed to allocation which depends on POE class per interface.'
+              tags:
+                - tag: Application
+                  value: PoE
+                - tag: PoE-Group
+                  value: '{#SNMPINDEX}'
+            - uuid: 972e690e949b4acf8290d7a7bdbb1c51
+              name: 'PSE {#SNMPVALUE} #{#SNMPINDEX}: Free Power Percent'
+              type: CALCULATED
+              key: 'pethMainPseFreePowerPercent[{#SNMPINDEX}]'
+              delay: 5m
+              history: 7d
+              params: 'last(//pethMainPseFreePower[{#SNMPINDEX}]) / last(//pethMainPsePower[{#SNMPINDEX}]) * 100'
+              description: 'This is real consumption by the power supply, as opposed to allocation which depends on POE class per interface.'
+              tags:
+                - tag: Application
+                  value: PoE
+                - tag: PoE-Group
+                  value: '{#SNMPINDEX}'
+            - uuid: 43c25154c9cc455597cc0cfb29b58b06
+              name: 'PSE {#SNMPVALUE} #{#SNMPINDEX}: Free Power'
+              type: CALCULATED
+              key: 'pethMainPseFreePower[{#SNMPINDEX}]'
+              delay: 5m
+              history: 30d
+              units: W
+              params: 'last(//pethMainPsePower[{#SNMPINDEX}]) - last(//pethMainPseAllocatedPower[{#SNMPINDEX}])'
+              description: 'This is real consumption by the power supply, as opposed to allocation which depends on POE class per interface.'
+              tags:
+                - tag: Application
+                  value: PoE
+                - tag: PoE-Group
+                  value: '{#SNMPINDEX}'
+            - uuid: e56406af9cfc472db5b0fdab9fbcc470
+              name: 'PSE {#SNMPVALUE} #{#SNMPINDEX}: Operational Status'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.105.1.3.1.1.3.{#SNMPINDEX}'
+              key: 'pethMainPseOperStatus[{#SNMPINDEX}]'
+              delay: 5m
+              history: 7d
+              trends: '0'
+              valuemap:
+                name: pethMainPseOperStatus
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                - tag: Application
+                  value: PoE
+                - tag: PoE-Group
+                  value: '{#SNMPINDEX}'
+              trigger_prototypes:
+                - uuid: 78606ea961264a779569251c97cdad2f
+                  expression: 'last(/NCZ Cisco PoE Status by SNMPv2/pethMainPseOperStatus[{#SNMPINDEX}])=3'
+                  name: 'PSE {#SNMPVALUE} is reporting faulty power source'
+                  priority: AVERAGE
+                  description: 'The operational state of the power source device is reporting as faulty. This likely indicates a hardware fault.'
+                  manual_close: 'YES'
+                  tags:
+                    - tag: Application
+                      value: PoE
+            - uuid: 2503272163344a708b91ed7e666e5eeb
+              name: 'PSE {#SNMPVALUE} #{#SNMPINDEX}: Connected PD Devices'
+              type: CALCULATED
+              key: 'pethMainPsePDCount[{#SNMPINDEX}]'
+              delay: 5m
+              params: 'sum(last_foreach(//cpeExtPsePortDeviceDetected[*]?[tag="PoE-Group:{#SNMPINDEX}"]))'
+              description: 'Quantity of ports delivering power on this Power Sourcing Entity'
+              tags:
+                - tag: Application
+                  value: PoE
+                - tag: PoE-Group
+                  value: '{#SNMPINDEX}'
+            - uuid: 7446354cff494a2287b8d8db8a0c110a
+              name: 'PSE {#SNMPVALUE} #{#SNMPINDEX}: Nominal Power'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.105.1.3.1.1.2.{#SNMPINDEX}'
+              key: 'pethMainPsePower[{#SNMPINDEX}]'
+              delay: 1h
+              history: 7d
+              units: W
+              description: 'Total capability of the power supply'
+              tags:
+                - tag: Application
+                  value: PoE
+                - tag: PoE-Group
+                  value: '{#SNMPINDEX}'
+            - uuid: 65b90529de2d4168920331cb5c0809c4
+              name: 'PSE {#SNMPVALUE} #{#SNMPINDEX}: Usage Threshold'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.105.1.3.1.1.5.{#SNMPINDEX}'
+              key: 'pethMainPseUsageThreshold[{#SNMPINDEX}]'
+              delay: 1h
+              history: 7d
+              trends: '0'
+              description: 'Requests a percentage threshold at which to trigger an alarm for power usage. If this is not supported (some platforms) will replace with the macro value.'
+              preprocessing:
+                - type: CHECK_NOT_SUPPORTED
+                  parameters:
+                    - ''
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '{$PSE_THRESHOLD_ALARM}'
+                - type: IN_RANGE
+                  parameters:
+                    - '1'
+                    - '99'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '{$PSE_THRESHOLD_ALARM}'
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              tags:
+                - tag: Application
+                  value: PoE
+                - tag: PoE-Group
+                  value: '{#SNMPINDEX}'
+          trigger_prototypes:
+            - uuid: 081b6f9f3f1d466bab060f37e8ffbd85
+              expression: 'last(/NCZ Cisco PoE Status by SNMPv2/pethMainPseFreePower[{#SNMPINDEX}]) < 15 and last(/NCZ Cisco PoE Status by SNMPv2/pethMainPseOperStatus[{#SNMPINDEX}])=1'
+              name: 'PSE {#SNMPVALUE} has no available PoE budget'
+              opdata: '{ITEM.LASTVALUE1} available'
+              priority: WARNING
+              description: 'There is less than 15W available, so no further PD devices may be connected to this supply.'
+              manual_close: 'YES'
+              tags:
+                - tag: Application
+                  value: PoE
+            - uuid: 67cbd5df778c4b03bdae4995f234002e
+              expression: |
+                (last(/NCZ Cisco PoE Status by SNMPv2/pethMainPseFreePower[{#SNMPINDEX}]) > 0) and
+                ((last(/NCZ Cisco PoE Status by SNMPv2/pethMainPseAllocatedPower[{#SNMPINDEX}]) / last(/NCZ Cisco PoE Status by SNMPv2/pethMainPsePower[{#SNMPINDEX}]))*100>=last(/NCZ Cisco PoE Status by SNMPv2/pethMainPseUsageThreshold[{#SNMPINDEX}]))
+              name: 'PSE {#SNMPVALUE} is low on available PoE budget'
+              opdata: '{ITEM.LASTVALUE1} available'
+              priority: INFO
+              description: 'The allocated PoE budget has reached the warning threshold as determined by the switch.'
+              manual_close: 'YES'
+              dependencies:
+                - name: 'PSE {#SNMPVALUE} has no available PoE budget'
+                  expression: 'last(/NCZ Cisco PoE Status by SNMPv2/pethMainPseFreePower[{#SNMPINDEX}]) < 15 and last(/NCZ Cisco PoE Status by SNMPv2/pethMainPseOperStatus[{#SNMPINDEX}])=1'
+              tags:
+                - tag: Application
+                  value: PoE
+          graph_prototypes:
+            - uuid: 40f954fa8e66454a93ea62dafe49462e
+              name: 'PSE {#SNMPVALUE} #{#SNMPINDEX} Power Status'
+              graph_items:
+                - sortorder: '1'
+                  drawtype: BOLD_LINE
+                  color: 0040FF
+                  item:
+                    host: 'NCZ Cisco PoE Status by SNMPv2'
+                    key: 'pethMainPseAllocatedPower[{#SNMPINDEX}]'
+                - sortorder: '2'
+                  drawtype: BOLD_LINE
+                  color: BF00FF
+                  item:
+                    host: 'NCZ Cisco PoE Status by SNMPv2'
+                    key: 'pethMainPseConsumptionPower[{#SNMPINDEX}]'
+                - sortorder: '3'
+                  drawtype: DASHED_LINE
+                  color: FF4000
+                  item:
+                    host: 'NCZ Cisco PoE Status by SNMPv2'
+                    key: 'pethMainPsePower[{#SNMPINDEX}]'
+      tags:
+        - tag: class
+          value: network
+        - tag: target
+          value: cisco
+      macros:
+        - macro: '{$PSE_THRESHOLD_ALARM}'
+          value: '80'
+        - macro: '{$PSE_VALUE_SCALE}'
+          value: '0.001'
+          description: 'mA to A usually'
+      valuemaps:
+        - uuid: 15bfdb3eea504f969ff85e1fceae3ae0
+          name: cpeExtPsePortLinkStatus
+          mappings:
+            - value: '1'
+              newvalue: OK
+            - value: '2'
+              newvalue: Unavailable
+            - value: '3'
+              newvalue: Nonoperational
+        - uuid: 2f8656948e0c491fa07145301d381925
+          name: pethMainPseOperStatus
+          mappings:
+            - value: '1'
+              newvalue: 'On'
+            - value: '2'
+              newvalue: 'Off'
+            - value: '3'
+              newvalue: Fault
+        - uuid: ac35208c55744ab8b810004c85b269d6
+          name: pethPsePortDetectionStatus
+          mappings:
+            - value: '1'
+              newvalue: Disabled
+            - value: '2'
+              newvalue: 'Not Powering'
+            - value: '3'
+              newvalue: 'Delivering Power'
+            - value: '4'
+              newvalue: Fault
+            - value: '5'
+              newvalue: 'Test Mode'
+            - value: '6'
+              newvalue: 'Idle Fault'
