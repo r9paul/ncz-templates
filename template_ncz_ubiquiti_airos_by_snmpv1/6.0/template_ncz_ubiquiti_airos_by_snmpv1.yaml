@@ -1,0 +1,1156 @@
+zabbix_export:
+  version: '6.0'
+  date: '2024-12-04T00:39:28Z'
+  groups:
+    - uuid: 36bff6c29af64692839d077febfc7079
+      name: 'Templates/Network devices'
+  templates:
+    - uuid: e917e255451847dd887d661f3ece112a
+      template: 'NCZ Ubiquiti AirOS by SNMPv1'
+      name: 'NCZ Ubiquiti AirOS by SNMPv1'
+      groups:
+        - name: 'Templates/Network devices'
+      items:
+        - uuid: 3159b51e4ad94fc2b84ca2f9d95119a9
+          name: 'ICMP Ping'
+          type: SIMPLE
+          key: icmpping
+          delay: 30s
+          history: 7d
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - '3600'
+          tags:
+            - tag: component
+              value: network
+          triggers:
+            - uuid: 99978e61de894f6ba7272c09f31a6df2
+              expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/icmpping,#3)=0'
+              name: 'Unavailable by ICMP ping'
+              priority: HIGH
+              description: |
+                Last value: {ITEM.LASTVALUE1}.
+                Last three attempts returned timeout.  Please check device connectivity.
+              tags:
+                - tag: scope
+                  value: availability
+        - uuid: 069b40006d554ed4a6b4973d0864ce68
+          name: 'ICMP Loss'
+          type: SIMPLE
+          key: icmppingloss
+          delay: 30s
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          username: Admin
+          password: 'sf4k^M4*O4IvO'
+          tags:
+            - tag: component
+              value: network
+          triggers:
+            - uuid: 48d09852b1174ad5a93048e0c48827f6
+              expression: 'min(/NCZ Ubiquiti AirOS by SNMPv1/icmppingloss,5m)>{$ICMP_LOSS_WARN} and min(/NCZ Ubiquiti AirOS by SNMPv1/icmppingloss,5m)<100'
+              name: 'High ICMP ping loss'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+              dependencies:
+                - name: 'Unavailable by ICMP ping'
+                  expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/icmpping,#3)=0'
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: 2f0b92af0e394e28bfbaf94abde6565b
+          name: 'ICMP Response'
+          type: SIMPLE
+          key: icmppingsec
+          delay: 30s
+          history: 7d
+          value_type: FLOAT
+          units: s
+          password: 'sf4k^M4*O4IvO'
+          tags:
+            - tag: component
+              value: network
+          triggers:
+            - uuid: 5f074ba5f010480fab9bd416b31c0daa
+              expression: 'avg(/NCZ Ubiquiti AirOS by SNMPv1/icmppingsec,5m)>{$ICMP_RESPONSE_TIME_WARN}'
+              name: 'High ICMP ping response time'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+              dependencies:
+                - name: 'High ICMP ping loss'
+                  expression: 'min(/NCZ Ubiquiti AirOS by SNMPv1/icmppingloss,5m)>{$ICMP_LOSS_WARN} and min(/NCZ Ubiquiti AirOS by SNMPv1/icmppingloss,5m)<100'
+                - name: 'Unavailable by ICMP ping'
+                  expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/icmpping,#3)=0'
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: 5da2572f9ea7448a84cc814b0560c95e
+          name: 'Device contact details'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.4.0
+          key: system.contact
+          delay: 1h
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            The textual identification of the contact person for this managed node, together with information on how to contact this person.  If no contact information is known, the value is the zero-length string.
+          inventory_link: CONTACT
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - '43200'
+          tags:
+            - tag: component
+              value: device
+        - uuid: 6be24e3262b54a26925e22d0b236ff0c
+          name: 'CPU Utilization (5min)'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.10002.1.1.1.4.2.1.3.2
+          key: 'system.cpu.util[5m]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: '5 minute load average of processor load.'
+          tags:
+            - tag: component
+              value: cpu
+          triggers:
+            - uuid: 5ad0f45f23a244e7865e741c00bca879
+              expression: 'avg(/NCZ Ubiquiti AirOS by SNMPv1/system.cpu.util[5m],5m)>{$CPU_UTIL_MAX}'
+              name: 'High CPU utilization'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+              tags:
+                - tag: scope
+                  value: capacity
+        - uuid: 0b74f9d7033644a2a74437313987ec06
+          name: 'Device description'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.1.0
+          key: system.descr
+          delay: 1h
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            A textual description of the entity.  This value should
+            include the full name and version identification of the system's hardware type, software operating-system, and
+            networking software.
+          inventory_link: HARDWARE
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - '43200'
+          tags:
+            - tag: component
+              value: device
+        - uuid: 61dd32665fba4f94854df86a5de1916e
+          name: 'Device location'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.6.0
+          key: system.location
+          delay: 1h
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            The physical location of this node (e.g., `telephone closet, 3rd floor').  If the location is unknown, the value is the zero-length string.
+          inventory_link: LOCATION
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - '43200'
+          tags:
+            - tag: component
+              value: device
+        - uuid: c819d4d323e84719ae2f801e691d6dd8
+          name: 'Device name'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.5.0
+          key: system.name
+          delay: 1h
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            An administratively-assigned name for this managed node.By convention, this is the node's fully-qualified domain name.  If the name is unknown, the value is the zero-length string.
+          inventory_link: NAME
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - '43000'
+          tags:
+            - tag: component
+              value: device
+        - uuid: 9e415d81827849e5968247d85556056e
+          name: 'System object ID'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.2.0
+          key: system.objectid
+          delay: 1h
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            The vendor's authoritative identification of the network management subsystem contained in the entity.  This value is allocated within the SMI enterprises subtree (1.3.6.1.4.1) and provides an easy and unambiguous means for determining`what kind of box' is being managed.  For example, if vendor`Flintstones, Inc.' was assigned the subtree1.3.6.1.4.1.4242, it could assign the identifier 1.3.6.1.4.1.4242.1.1 to its `Fred Router'.
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - '43000'
+          tags:
+            - tag: component
+              value: device
+        - uuid: 66befdf5ee6f49638e6978ad9de2ddae
+          name: 'Device uptime'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.3.0
+          key: 'system.uptime[sysUpTime]'
+          delay: 30s
+          history: 7d
+          trends: '0'
+          units: uptime
+          description: |
+            MIB: SNMPv2-MIB
+            The time (in hundredths of a second) since the network management portion of the system was last re-initialized.
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            - tag: component
+              value: device
+          triggers:
+            - uuid: cfba7e32ad68453ea9266c6d6ca32e14
+              expression: 'last(/NCZ Ubiquiti AirOS by SNMPv1/system.uptime[sysUpTime])<10m'
+              name: '{HOST.NAME} has been restarted'
+              priority: WARNING
+              description: |
+                Last value: {ITEM.LASTVALUE1}.
+                The device uptime is less than 10 minutes
+              manual_close: 'YES'
+              dependencies:
+                - name: 'No SNMP data collection'
+                  expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/zabbix[host,snmp,available],{$SNMP_TIMEOUT})=0'
+              tags:
+                - tag: scope
+                  value: availability
+        - uuid: 66f6341ddc6144b98e270696b3694b16
+          name: 'GPS Altitude'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.41112.1.4.9.5.0
+          key: ubntGpsAltMeters
+          delay: 15m
+          history: 7d
+          value_type: FLOAT
+          units: m
+          description: 'GPS Altitude (m)'
+          tags:
+            - tag: component
+              value: gps
+        - uuid: b9c9fc271d9d4b8599bf82ae9904cffe
+          name: 'GPS Latitude'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.41112.1.4.9.3.0
+          key: ubntGpsLat
+          delay: 15m
+          history: 7d
+          value_type: FLOAT
+          description: 'GPS Latitude'
+          inventory_link: LOCATION_LAT
+          preprocessing:
+            - type: STR_REPLACE
+              parameters:
+                - .-
+                - '.0'
+          tags:
+            - tag: component
+              value: gps
+        - uuid: bd9aa21d0b014627b1167d0aa5142670
+          name: 'GPS Longitude'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.41112.1.4.9.4.0
+          key: ubntGpsLon
+          delay: 15m
+          history: 7d
+          value_type: FLOAT
+          description: 'GPS Longitude'
+          inventory_link: LOCATION_LON
+          preprocessing:
+            - type: STR_REPLACE
+              parameters:
+                - .-
+                - '.0'
+          tags:
+            - tag: component
+              value: gps
+        - uuid: 1818f1b4bc874e30b950c833ee2b5666
+          name: 'System Temperature'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.41112.1.4.8.4.0
+          key: ubntHostTemperature
+          delay: 5m
+          history: 7d
+          units: ºC
+          description: 'Host system temperature'
+          tags:
+            - tag: component
+              value: environment
+        - uuid: cca85112b20f49138e92be08dab67100
+          name: 'Available Memory'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.10002.1.1.1.1.2.0
+          key: 'vm.memory[free]'
+          delay: 5m
+          history: 7d
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            - tag: component
+              value: memory
+        - uuid: fb86f20d523f4b07a0a4318718be8848
+          name: 'Total Memory'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.10002.1.1.1.1.1.0
+          key: 'vm.memory[total]'
+          delay: 5m
+          history: 7d
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1024'
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - '3600'
+          tags:
+            - tag: component
+              value: memory
+        - uuid: 244301d8e0904970b6191e35481b357f
+          name: 'Memory Utilization'
+          type: CALCULATED
+          key: 'vm.memory[used]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          params: '((last(//vm.memory[total])-last(//vm.memory[free]))/last(//vm.memory[total]))*100'
+          tags:
+            - tag: component
+              value: memory
+          triggers:
+            - uuid: 4ace5139994b45ec80c896415fb72cbe
+              expression: 'avg(/NCZ Ubiquiti AirOS by SNMPv1/vm.memory[used],5m)>{$MEMORY_UTIL_MAX}'
+              name: 'High memory utilization'
+              priority: AVERAGE
+              description: 'Last value: {ITEM.LASTVALUE1}.'
+              tags:
+                - tag: scope
+                  value: capacity
+        - uuid: bb02a0610b114907a4d4fc55f91e9be7
+          name: 'SNMP availability'
+          type: INTERNAL
+          key: 'zabbix[host,snmp,available]'
+          history: 7d
+          trends: '0'
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - '3600'
+          tags:
+            - tag: component
+              value: network
+          triggers:
+            - uuid: 1e5b806ac1bf4081889c3af4702d57a4
+              expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/zabbix[host,snmp,available],{$SNMP_TIMEOUT})=0'
+              name: 'No SNMP data collection'
+              priority: WARNING
+              description: |
+                Last value: {ITEM.LASTVALUE1}.
+                SNMP is not available for polling. Please check device connectivity and SNMP settings.
+              dependencies:
+                - name: 'Unavailable by ICMP ping'
+                  expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/icmpping,#3)=0'
+              tags:
+                - tag: scope
+                  value: availability
+      discovery_rules:
+        - uuid: 386596771df640fcb39fb4880657a832
+          name: 'Network Interfaces Discovery'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#IFOPERSTATUS},1.3.6.1.2.1.2.2.1.8,{#IFADMINSTATUS},1.3.6.1.2.1.2.2.1.7,{#IFALIAS},1.3.6.1.2.1.31.1.1.1.18,{#IFNAME},1.3.6.1.2.1.2.2.1.2,{#IFDESCR},1.3.6.1.2.1.2.2.1.2,{#IFTYPE},1.3.6.1.2.1.2.2.1.3]'
+          key: net.if.discovery
+          delay: 1h
+          filter:
+            evaltype: AND
+            conditions:
+              - macro: '{#IFADMINSTATUS}'
+                value: (1|3)
+                formulaid: A
+              - macro: '{#IFOPERSTATUS}'
+                value: (1|2|3|4|5|7)
+                formulaid: D
+              - macro: '{#IFNAME}'
+                value: '@Network interfaces for discovery'
+                formulaid: C
+              - macro: '{#IFDESCR}'
+                value: airview1
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+          description: 'Discovering interfaces from IF-MIB'
+          item_prototypes:
+            - uuid: 3ffc6edeb19b4748a185930cf18692d1
+              name: 'Interface {#IFDESCR}: Inbound packets discarded'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.13.{#SNMPINDEX}'
+              key: 'net.if.in.discards[ifInDiscards.{#SNMPINDEX}]'
+              delay: 5m
+              history: 7d
+              description: |
+                MIB: IF-MIB
+                The number of inbound packets which were chosen to be discarded
+                even though no errors had been detected to prevent their being deliverable to a higher-layer protocol.
+                One possible reason for discarding such a packet could be to free up buffer space.
+                Discontinuities in the value of this counter can occur at re-initialization of the management system,
+                and at other times as indicated by the value of ifCounterDiscontinuityTime.
+              preprocessing:
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#IFDESCR}'
+            - uuid: 5bb8ae2962914990bc22acdbacd0558a
+              name: 'Interface {#IFDESCR}: Inbound packets with errors'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.14.{#SNMPINDEX}'
+              key: 'net.if.in.errors[ifInErrors.{#SNMPINDEX}]'
+              delay: 5m
+              history: 7d
+              description: |
+                MIB: IF-MIB
+                For packet-oriented interfaces, the number of inbound packets that contained errors preventing them from being deliverable to a higher-layer protocol.  For character-oriented or fixed-length interfaces, the number of inbound transmission units that contained errors preventing them from being deliverable to a higher-layer protocol. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime.
+              preprocessing:
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#IFDESCR}'
+            - uuid: 3006d10205ce4fb5a4e0f816179bb208
+              name: 'Interface {#IFDESCR}: Bits received'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.10.{#SNMPINDEX}'
+              key: 'net.if.in[ifInOctets.{#SNMPINDEX}]'
+              history: 30d
+              units: bps
+              description: |
+                MIB: IF-MIB
+                The total number of octets received on the interface,including framing characters. Discontinuities in the value of this counter can occurat re-initialization of the management system, and atother times as indicated by the value of ifCounterDiscontinuityTime.
+              preprocessing:
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                - type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#IFDESCR}'
+            - uuid: 6a9915a173914a39ad39c98f9a34925f
+              name: 'Interface {#IFDESCR}: Outbound packets discarded'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.19.{#SNMPINDEX}'
+              key: 'net.if.out.discards[ifOutDiscards.{#SNMPINDEX}]'
+              delay: 5m
+              history: 7d
+              description: |
+                MIB: IF-MIB
+                The number of outbound packets which were chosen to be discarded
+                even though no errors had been detected to prevent their being deliverable to a higher-layer protocol.
+                One possible reason for discarding such a packet could be to free up buffer space.
+                Discontinuities in the value of this counter can occur at re-initialization of the management system,
+                and at other times as indicated by the value of ifCounterDiscontinuityTime.
+              preprocessing:
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#IFDESCR}'
+            - uuid: 481189f0532744fb8538c60df45b5a6a
+              name: 'Interface {#IFDESCR}: Outbound packets with errors'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.20.{#SNMPINDEX}'
+              key: 'net.if.out.errors[ifOutErrors.{#SNMPINDEX}]'
+              delay: 5m
+              history: 7d
+              description: |
+                MIB: IF-MIB
+                For packet-oriented interfaces, the number of outbound packets that contained errors preventing them from being deliverable to a higher-layer protocol.  For character-oriented or fixed-length interfaces, the number of outbound transmission units that contained errors preventing them from being deliverable to a higher-layer protocol. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime.
+              preprocessing:
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#IFDESCR}'
+            - uuid: 15949bc7747b45e094b59f2847dba8ab
+              name: 'Interface {#IFDESCR}: Bits sent'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.16.{#SNMPINDEX}'
+              key: 'net.if.out[ifOutOctets.{#SNMPINDEX}]'
+              history: 30d
+              units: bps
+              description: |
+                MIB: IF-MIB
+                The total number of octets transmitted out of the interface, including framing characters. Discontinuities in the value of this counter can occurat re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime.
+              preprocessing:
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                - type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#IFDESCR}'
+            - uuid: 2350563fe34f48bba757ac08ceadf852
+              name: 'Interface {#IFDESCR}: Speed'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.5.{#SNMPINDEX}'
+              key: 'net.if.speed[ifSpeed.{#SNMPINDEX}]'
+              delay: 5m
+              history: 7d
+              units: bps
+              description: |
+                MIB: IF-MIB
+                An estimate of the interface's current bandwidth in bits per second.
+                For interfaces which do not vary in bandwidth or for those where no accurate estimation can be made,
+                this object should contain the nominal bandwidth.
+                If the bandwidth of the interface is greater than the maximum value reportable by this object then
+                this object should report its maximum value (4,294,967,295) and ifHighSpeed must be used to report the interace's speed.
+                For a sub-layer which has no concept of bandwidth, this object should be zero.
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '3600'
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#IFDESCR}'
+          trigger_prototypes:
+            - uuid: f8c4de38eb4749ba9af4b0a06bdbb3ba
+              expression: |
+                (avg(/NCZ Ubiquiti AirOS by SNMPv1/net.if.in[ifInOctets.{#SNMPINDEX}],15m)>({$IF_UTIL_MAX}/100)*last(/NCZ Ubiquiti AirOS by SNMPv1/net.if.speed[ifSpeed.{#SNMPINDEX}]) or
+                avg(/NCZ Ubiquiti AirOS by SNMPv1/net.if.out[ifOutOctets.{#SNMPINDEX}],15m)>({$IF_UTIL_MAX}/100)*last(/NCZ Ubiquiti AirOS by SNMPv1/net.if.speed[ifSpeed.{#SNMPINDEX}])) and
+                last(/NCZ Ubiquiti AirOS by SNMPv1/net.if.speed[ifSpeed.{#SNMPINDEX}])>0
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: |
+                avg(/NCZ Ubiquiti AirOS by SNMPv1/net.if.in[ifInOctets.{#SNMPINDEX}],15m)<(({$IF_UTIL_MAX}-3)/100)*last(/NCZ Ubiquiti AirOS by SNMPv1/net.if.speed[ifSpeed.{#SNMPINDEX}]) and
+                avg(/NCZ Ubiquiti AirOS by SNMPv1/net.if.out[ifOutOctets.{#SNMPINDEX}],15m)<(({$IF_UTIL_MAX}-3)/100)*last(/NCZ Ubiquiti AirOS by SNMPv1/net.if.speed[ifSpeed.{#SNMPINDEX}])
+              name: 'Interface {#IFDESCR}: High bandwidth usage >{$IF_UTIL_MAX:"{#IFNAME}"}%'
+              opdata: 'Last value: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              manual_close: 'YES'
+              tags:
+                - tag: scope
+                  value: capacity
+            - uuid: 2c436aa3e2ee4981a2cad4c60d5d5cfb
+              expression: |
+                avg(/NCZ Ubiquiti AirOS by SNMPv1/net.if.in.errors[ifInErrors.{#SNMPINDEX}],5m)>{$IF_ERRORS_WARN}
+                or avg(/NCZ Ubiquiti AirOS by SNMPv1/net.if.out.errors[ifOutErrors.{#SNMPINDEX}],5m)>{$IF_ERRORS_WARN}
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: |
+                avg(/NCZ Ubiquiti AirOS by SNMPv1/net.if.in.errors[ifInErrors.{#SNMPINDEX}],5m)<{$IF_ERRORS_WARN}*0.8
+                and avg(/NCZ Ubiquiti AirOS by SNMPv1/net.if.out.errors[ifOutErrors.{#SNMPINDEX}],5m)<{$IF_ERRORS_WARN}*0.8
+              name: 'Interface {#IFDESCR}: High error rate'
+              opdata: 'Last value: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'Recovers when below 80% of {$IF_ERRORS_WARN} threshold'
+              manual_close: 'YES'
+              tags:
+                - tag: scope
+                  value: performance
+          graph_prototypes:
+            - uuid: da9c8dacc62b4d9d9c80b1f192efe8ec
+              name: 'Interface {#IFDESCR}: Network traffic'
+              graph_items:
+                - drawtype: GRADIENT_LINE
+                  color: 1A7C11
+                  item:
+                    host: 'NCZ Ubiquiti AirOS by SNMPv1'
+                    key: 'net.if.in[ifInOctets.{#SNMPINDEX}]'
+                - sortorder: '1'
+                  drawtype: BOLD_LINE
+                  color: 2774A4
+                  item:
+                    host: 'NCZ Ubiquiti AirOS by SNMPv1'
+                    key: 'net.if.out[ifOutOctets.{#SNMPINDEX}]'
+                - sortorder: '2'
+                  color: F63100
+                  yaxisside: RIGHT
+                  item:
+                    host: 'NCZ Ubiquiti AirOS by SNMPv1'
+                    key: 'net.if.out.errors[ifOutErrors.{#SNMPINDEX}]'
+                - sortorder: '3'
+                  color: A54F10
+                  yaxisside: RIGHT
+                  item:
+                    host: 'NCZ Ubiquiti AirOS by SNMPv1'
+                    key: 'net.if.in.errors[ifInErrors.{#SNMPINDEX}]'
+                - sortorder: '4'
+                  color: FC6EA3
+                  yaxisside: RIGHT
+                  item:
+                    host: 'NCZ Ubiquiti AirOS by SNMPv1'
+                    key: 'net.if.out.discards[ifOutDiscards.{#SNMPINDEX}]'
+                - sortorder: '5'
+                  color: 6C59DC
+                  yaxisside: RIGHT
+                  item:
+                    host: 'NCZ Ubiquiti AirOS by SNMPv1'
+                    key: 'net.if.in.discards[ifInDiscards.{#SNMPINDEX}]'
+        - uuid: 9b0f1a36089c456bab73e17215a2c69d
+          name: 'Stations Discovery'
+          type: SNMP_AGENT
+          snmp_oid: 'discover[{#STANAME},.1.3.6.1.4.1.41112.1.4.7.1.2]'
+          key: radio.stations.discovery
+          delay: 15m
+          item_prototypes:
+            - uuid: 34327da82f684699924513784cef6765
+              name: 'Station {#STANAME}: Connection Quality'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.7.1.6.{#SNMPINDEX}'
+              key: 'radio.ubntStaCcq[{#SNMPINDEX}]'
+              history: 14d
+              value_type: FLOAT
+              units: '%'
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              tags:
+                - tag: component
+                  value: radio
+                - tag: station
+                  value: '{#STANAME}'
+            - uuid: aacadac9865e4709b5b5575bb3366a30
+              name: 'Station {#STANAME}: Connection Time'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.7.1.15.{#SNMPINDEX}'
+              key: 'radio.ubntStaConnTime[{#SNMPINDEX}]'
+              history: 14d
+              units: s
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                - tag: component
+                  value: radio
+                - tag: station
+                  value: '{#STANAME}'
+              trigger_prototypes:
+                - uuid: 5bb2607286de40de9f83154fb53e2fa0
+                  expression: 'last(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntStaConnTime[{#SNMPINDEX}])<600'
+                  name: 'Station {#STANAME}: Link Recently Reconnected'
+                  priority: INFO
+                  dependencies:
+                    - name: 'Station {#STANAME}: No Data Being Received'
+                      expression: 'nodata(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntStaConnTime[{#SNMPINDEX}],60)=1'
+                  tags:
+                    - tag: scope
+                      value: availability
+                - uuid: 74f09688c0e1486b874fb087b5c0ca49
+                  expression: 'nodata(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntStaConnTime[{#SNMPINDEX}],60)=1'
+                  name: 'Station {#STANAME}: No Data Being Received'
+                  priority: AVERAGE
+                  manual_close: 'YES'
+                  dependencies:
+                    - name: 'No SNMP data collection'
+                      expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/zabbix[host,snmp,available],{$SNMP_TIMEOUT})=0'
+                  tags:
+                    - tag: scope
+                      value: availability
+            - uuid: 1b81455747c348319b68d76397c3b615
+              name: 'Station {#STANAME}: Distance'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.7.1.5.{#SNMPINDEX}'
+              key: 'radio.ubntStaDistance[{#SNMPINDEX}]'
+              history: 14d
+              units: m
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '3600'
+              tags:
+                - tag: component
+                  value: radio
+                - tag: station
+                  value: '{#STANAME}'
+            - uuid: d5891074a65a42f699ac98f445709190
+              name: 'Station {#STANAME}: Local CINR'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.7.1.16.{#SNMPINDEX}'
+              key: 'radio.ubntStaLocalCINR[{#SNMPINDEX}]'
+              history: 14d
+              units: dB
+              tags:
+                - tag: component
+                  value: radio
+                - tag: station
+                  value: '{#STANAME}'
+            - uuid: 0e124eb2e4ac4dfb99bb9fa4161f15b0
+              name: 'Station {#STANAME}: Noise Floor'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.7.1.4.{#SNMPINDEX}'
+              key: 'radio.ubntStaNoiseFloor[{#SNMPINDEX}]'
+              history: 14d
+              value_type: FLOAT
+              units: dBm
+              tags:
+                - tag: component
+                  value: radio
+                - tag: station
+                  value: '{#STANAME}'
+            - uuid: e4189f169da84e1e986bf14f9c106a84
+              name: 'Station {#STANAME}: Rx Airtime'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.7.1.20.{#SNMPINDEX}'
+              key: 'radio.ubntStaRxAirtime[{#SNMPINDEX}]'
+              history: 14d
+              value_type: FLOAT
+              units: '%'
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              tags:
+                - tag: component
+                  value: radio
+                - tag: station
+                  value: '{#STANAME}'
+              trigger_prototypes:
+                - uuid: 02f1b218ede345469f5094ce93fe776a
+                  expression: 'avg(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntStaRxAirtime[{#SNMPINDEX}],360)>80'
+                  name: 'Station {#STANAME}: Rx Airtime is within 80% of Capacity'
+                  priority: WARNING
+                  tags:
+                    - tag: scope
+                      value: performance
+            - uuid: c98fc132a5f049308cf77dc05e7b1e17
+              name: 'Station {#STANAME}: Rx Capacity'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.7.1.18.{#SNMPINDEX}'
+              key: 'radio.ubntStaRxCapacity[{#SNMPINDEX}]'
+              history: 14d
+              units: bps
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '1000'
+              tags:
+                - tag: component
+                  value: radio
+                - tag: station
+                  value: '{#STANAME}'
+            - uuid: 70bfd51fb063433591747476f8600f91
+              name: 'Station {#STANAME}: Rx Rate'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.7.1.14.{#SNMPINDEX}'
+              key: 'radio.ubntStaRxRate[{#SNMPINDEX}]'
+              history: 14d
+              units: bps
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '8'
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                - tag: component
+                  value: radio
+                - tag: station
+                  value: '{#STANAME}'
+            - uuid: b6dba13d5fe14f52a5e780927de1ebc8
+              name: 'Station {#STANAME}: Signal Strength'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.7.1.3.{#SNMPINDEX}'
+              key: 'radio.ubntStaSignal[{#SNMPINDEX}]'
+              history: 14d
+              value_type: FLOAT
+              units: dBm
+              tags:
+                - tag: component
+                  value: radio
+                - tag: station
+                  value: '{#STANAME}'
+              trigger_prototypes:
+                - uuid: 6d1ae16612fb4f76b418ffcb3625d3f7
+                  expression: 'avg(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntStaSignal[{#SNMPINDEX}],360)>{$SIGNAL_HIGH_WARN}'
+                  name: 'Station {#STANAME}: Signal Strength is too high'
+                  priority: WARNING
+                  manual_close: 'YES'
+                  dependencies:
+                    - name: 'Station {#STANAME}: No Data Being Received'
+                      expression: 'nodata(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntStaConnTime[{#SNMPINDEX}],60)=1'
+                  tags:
+                    - tag: scope
+                      value: performance
+                - uuid: b202ecd4e5144df789209ee3ecdfcd3e
+                  expression: 'avg(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntStaSignal[{#SNMPINDEX}],360)<{$SIGNAL_LOW_WARN}'
+                  name: 'Station {#STANAME}: Signal Strength is too low'
+                  priority: WARNING
+                  manual_close: 'YES'
+                  dependencies:
+                    - name: 'Station {#STANAME}: No Data Being Received'
+                      expression: 'nodata(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntStaConnTime[{#SNMPINDEX}],60)=1'
+                  tags:
+                    - tag: scope
+                      value: performance
+            - uuid: 28ac78d3b47e47169cb8fbe93598eee8
+              name: 'Station {#STANAME}: Tx Airtime'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.7.1.19.{#SNMPINDEX}'
+              key: 'radio.ubntStaTxAirtime[{#SNMPINDEX}]'
+              history: 14d
+              value_type: FLOAT
+              units: '%'
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              tags:
+                - tag: component
+                  value: radio
+                - tag: station
+                  value: '{#STANAME}'
+              trigger_prototypes:
+                - uuid: d149f6370d5042c38323bdab5c947f7e
+                  expression: 'avg(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntStaTxAirtime[{#SNMPINDEX}],360)>80'
+                  name: 'Station {#STANAME}: Tx Airtime is within 80% of Capacity'
+                  priority: WARNING
+                  tags:
+                    - tag: scope
+                      value: performance
+            - uuid: b7496ef6b36e4a57b4b8dd812b37dbd0
+              name: 'Station {#STANAME}: Tx Capacity'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.7.1.17.{#SNMPINDEX}'
+              key: 'radio.ubntStaTxCapacity[{#SNMPINDEX}]'
+              history: 14d
+              units: bps
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '1000'
+              tags:
+                - tag: component
+                  value: radio
+                - tag: station
+                  value: '{#STANAME}'
+            - uuid: cd5f58a081eb4b01be53c865c87cc153
+              name: 'Station {#STANAME}: Tx Rate'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.7.1.13.{#SNMPINDEX}'
+              key: 'radio.ubntStaTxRate[{#SNMPINDEX}]'
+              history: 14d
+              units: bps
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '8'
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                - tag: component
+                  value: radio
+                - tag: station
+                  value: '{#STANAME}'
+          trigger_prototypes:
+            - uuid: ba2fa4224b2141848323a86b11b176b0
+              expression: '(avg(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntStaRxRate[{#SNMPINDEX}],360)/avg(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntStaRxCapacity[{#SNMPINDEX}],360))>0.8'
+              name: 'Station {#STANAME}: Rx Throughput is within 80% of Capacity'
+              priority: WARNING
+              tags:
+                - tag: scope
+                  value: performance
+            - uuid: 231c39e105d347c88fa0ed7e74423cd3
+              expression: '(avg(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntStaTxRate[{#SNMPINDEX}],360)/avg(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntStaTxCapacity[{#SNMPINDEX}],360))>0.8'
+              name: 'Station {#STANAME}: Tx Throughput is within 80% of Capacity'
+              priority: WARNING
+              tags:
+                - tag: scope
+                  value: performance
+          graph_prototypes:
+            - uuid: 37bf5c46406f42319c1ecc9c56e834c8
+              name: 'Station {#STANAME}: Signal'
+              graph_items:
+                - color: FFFF00
+                  calc_fnc: ALL
+                  item:
+                    host: 'NCZ Ubiquiti AirOS by SNMPv1'
+                    key: 'radio.ubntStaNoiseFloor[{#SNMPINDEX}]'
+                - sortorder: '1'
+                  color: FF8000
+                  calc_fnc: ALL
+                  item:
+                    host: 'NCZ Ubiquiti AirOS by SNMPv1'
+                    key: 'radio.ubntStaSignal[{#SNMPINDEX}]'
+            - uuid: 31b6cab464d0431e918485e1ad751097
+              name: 'Station {#STANAME}: Throughput'
+              graph_items:
+                - drawtype: DASHED_LINE
+                  color: 80FF00
+                  calc_fnc: ALL
+                  item:
+                    host: 'NCZ Ubiquiti AirOS by SNMPv1'
+                    key: 'radio.ubntStaRxCapacity[{#SNMPINDEX}]'
+                - sortorder: '1'
+                  color: 388E3C
+                  calc_fnc: ALL
+                  item:
+                    host: 'NCZ Ubiquiti AirOS by SNMPv1'
+                    key: 'radio.ubntStaRxRate[{#SNMPINDEX}]'
+                - sortorder: '2'
+                  drawtype: DASHED_LINE
+                  color: 0040FF
+                  calc_fnc: ALL
+                  item:
+                    host: 'NCZ Ubiquiti AirOS by SNMPv1'
+                    key: 'radio.ubntStaTxCapacity[{#SNMPINDEX}]'
+                - sortorder: '3'
+                  color: 1A237E
+                  calc_fnc: ALL
+                  item:
+                    host: 'NCZ Ubiquiti AirOS by SNMPv1'
+                    key: 'radio.ubntStaTxRate[{#SNMPINDEX}]'
+        - uuid: 2a20edbfe4e24890b6a85e1935143480
+          name: 'Radios Discovery'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#RADIOINDEX},.1.3.6.1.4.1.41112.1.4.1.1.1,{#RADIOSSID},.1.3.6.1.4.1.41112.1.4.5.1.2]'
+          key: radios.discovery
+          delay: 1h
+          item_prototypes:
+            - uuid: 2bb569aa26c44167a6a01b5c6d0d39ce
+              name: 'Radio {#RADIOSSID}: DFS Enabled'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.1.1.5.{#SNMPINDEX}'
+              key: 'radio.ubntRadioDfsEnabled[{#SNMPINDEX}]'
+              history: 14d
+              description: 'Whether or not DFS is enabled on the radio'
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '3600'
+              tags:
+                - tag: component
+                  value: radio
+                - tag: ssid
+                  value: '{#RADIOSSID}'
+            - uuid: 11ffa508648e4edab630bf2e13e39d43
+              name: 'Radio {#RADIOSSID}: Frequency'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.1.1.4.{#SNMPINDEX}'
+              key: 'radio.ubntRadioFreq[{#SNMPINDEX}]'
+              history: 14d
+              units: Hz
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '1000000'
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '3600'
+              tags:
+                - tag: component
+                  value: radio
+                - tag: ssid
+                  value: '{#RADIOSSID}'
+              trigger_prototypes:
+                - uuid: 5f4d42fc40034cbfb5057219daed1793
+                  expression: 'change(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntRadioFreq[{#SNMPINDEX}])<>0'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'changecount(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntRadioFreq[{#SNMPINDEX}],3600)=0'
+                  name: 'Radio {#RADIOSSID}: Wireless Frequency has changed'
+                  opdata: 'New Frequency: {ITEM.LASTVALUE1}'
+                  priority: INFO
+                  description: 'Will recover after an hour with no further channel changes'
+                  type: MULTIPLE
+                  manual_close: 'YES'
+                  dependencies:
+                    - name: '{HOST.NAME} has been restarted'
+                      expression: 'last(/NCZ Ubiquiti AirOS by SNMPv1/system.uptime[sysUpTime])<10m'
+                  tags:
+                    - tag: scope
+                      value: notice
+            - uuid: 544e3b41204740b989f2c35e4fa99209
+              name: 'Radio {#RADIOSSID}: Tx Power'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.1.1.6.{#SNMPINDEX}'
+              key: 'radio.ubntRadioTxPower[{#SNMPINDEX}]'
+              history: 14d
+              units: dBm
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '3600'
+              tags:
+                - tag: component
+                  value: radio
+                - tag: ssid
+                  value: '{#RADIOSSID}'
+            - uuid: 636459989891475b836bb9734a62092f
+              name: 'Radio {#RADIOSSID}: Channel Width'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.5.1.14.{#SNMPINDEX}'
+              key: 'radio.ubntWlStatChanWidth[{#SNMPINDEX}]'
+              delay: 15m
+              history: 14d
+              units: Hz
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '1000000'
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '3600'
+              tags:
+                - tag: component
+                  value: radio
+                - tag: ssid
+                  value: '{#RADIOSSID}'
+            - uuid: d27fa82a3ae4460da9ca072716a1a684
+              name: 'Radio {#RADIOSSID}: Noise Floor'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.5.1.8.{#SNMPINDEX}'
+              key: 'radio.ubntWlStatNoiseFloor[{#SNMPINDEX}]'
+              history: 14d
+              value_type: FLOAT
+              units: dBm
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '3600'
+              tags:
+                - tag: component
+                  value: radio
+                - tag: ssid
+                  value: '{#RADIOSSID}'
+            - uuid: ad38830df1264f228a2aaec5571dca0f
+              name: 'Radio {#RADIOSSID}: Station Count'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.41112.1.4.5.1.15.{#SNMPINDEX}'
+              key: 'radio.ubntWlStatStaCount[{#SNMPINDEX}]'
+              history: 14d
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '3600'
+              tags:
+                - tag: component
+                  value: radio
+                - tag: ssid
+                  value: '{#RADIOSSID}'
+              trigger_prototypes:
+                - uuid: e142ee198ff04790afc54f3670f1a127
+                  expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntWlStatStaCount[{#SNMPINDEX}],3600)>last(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntWlStatStaCount[{#SNMPINDEX}])'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'max(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntWlStatStaCount[{#SNMPINDEX}],3600)=last(/NCZ Ubiquiti AirOS by SNMPv1/radio.ubntWlStatStaCount[{#SNMPINDEX}])'
+                  name: 'Radio {#RADIOSSID}: Number of stations has decreased'
+                  priority: WARNING
+                  manual_close: 'YES'
+                  tags:
+                    - tag: scope
+                      value: availability
+      tags:
+        - tag: class
+          value: network
+        - tag: target
+          value: ubiquiti
+        - tag: target
+          value: ubiquiti-airos
+      macros:
+        - macro: '{$CPU_UTIL_MAX}'
+          value: '90'
+        - macro: '{$ICMP_LOSS_WARN}'
+          value: '20'
+        - macro: '{$ICMP_RESPONSE_TIME_WARN}'
+          value: '0.15'
+        - macro: '{$IF_ERRORS_WARN}'
+          value: '2'
+        - macro: '{$IF_UTIL_MAX}'
+          value: '90'
+        - macro: '{$MEMORY_UTIL_MAX}'
+          value: '90'
+        - macro: '{$SIGNAL_HIGH_WARN}'
+          value: '-30'
+        - macro: '{$SIGNAL_LOW_WARN}'
+          value: '-80'
+        - macro: '{$SNMP_TIMEOUT}'
+          value: 3m
+  graphs:
+    - uuid: 021cc3d3f40f4773a58114cdf3494cec
+      name: 'CPU utilization'
+      ymin_type_1: FIXED
+      ymax_type_1: FIXED
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 1A7C11
+          item:
+            host: 'NCZ Ubiquiti AirOS by SNMPv1'
+            key: 'system.cpu.util[5m]'
+    - uuid: 8a5f814873bf49f2bb0ae80cac71d269
+      name: 'Memory utilization'
+      ymin_type_1: FIXED
+      ymax_type_1: FIXED
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 1A7C11
+          item:
+            host: 'NCZ Ubiquiti AirOS by SNMPv1'
+            key: 'vm.memory[used]'
+    - uuid: 07613a89f94a455c93a1b085b87bbeab
+      name: 'Ping Response'
+      graph_items:
+        - color: 199C0D
+          item:
+            host: 'NCZ Ubiquiti AirOS by SNMPv1'
+            key: icmppingloss
+        - sortorder: '1'
+          color: F63100
+          yaxisside: RIGHT
+          item:
+            host: 'NCZ Ubiquiti AirOS by SNMPv1'
+            key: icmppingsec
