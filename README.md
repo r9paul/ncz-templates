@@ -25,9 +25,14 @@ Template for monitoring Ruckus SmartZone Wireless Controller
 Tested with Zabbix 5.4 & 6.0, Ruckus SmartZone vSZ-H 5.2, 6.1
 
 ## [NCZ Ubiquiti AirOS by SNMPv1](template_ncz_ubiquiti_airos_by_snmpv1/)
-Template for monitoring Ruckus SmartZone Wireless Controller 
+Template for monitoring Ubiquiti airMAX Wireless Links
 
-Tested with Zabbix 6.0, Ubiquiti aiMAX Lite AP GPS, airMAX NanoStation AP firmwares 8.7.12, 8.7.14
+Tested with Zabbix 6.0, Ubiquiti airMAX Lite AP GPS, airMAX NanoStation AP firmwares 8.7.12, 8.7.14
+
+## [NCZ Ubiquiti Wave by SNMPv2](template_ncz_ubiquiti_wave_by_snmpv2/)
+Template for monitoring Ubiquiti Wave Wireless Links
+
+Tested with Zabbix 6.0, Ubiquiti Wave-AP and Wave-Nano
 
 
 
