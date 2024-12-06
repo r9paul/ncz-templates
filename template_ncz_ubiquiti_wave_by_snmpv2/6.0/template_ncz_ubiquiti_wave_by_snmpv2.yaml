@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-12-05T18:54:00Z'
+  date: '2024-12-06T18:47:42Z'
   groups:
     - uuid: 36bff6c29af64692839d077febfc7079
       name: 'Templates/Network devices'
@@ -416,7 +416,7 @@ zabbix_export:
             - uuid: bc4f3738380b4a51a48e98d63b25a5cb
               expression: 'abs(change(/NCZ Ubiquiti Wave by SNMPv2/ubntOrientationRoll))>{$ROLL_WARN}'
               recovery_mode: RECOVERY_EXPRESSION
-              recovery_expression: 'changecount(/NCZ Ubiquiti Wave by SNMPv2/ubntOrientationRoll,3600)=0'
+              recovery_expression: '(max(/NCZ Ubiquiti Wave by SNMPv2/ubntOrientationRoll,3600)-min(/NCZ Ubiquiti Wave by SNMPv2/ubntOrientationRoll,3600))<{$ROLL_WARN}'
               name: 'Device roll has changed by more than {$ROLL_WARN} degrees'
               priority: WARNING
               description: 'Will recover after an hour with no further changes'
@@ -447,7 +447,7 @@ zabbix_export:
             - uuid: 2d0bf62475c24ba499ef2027ba03cb0d
               expression: 'abs(change(/NCZ Ubiquiti Wave by SNMPv2/ubntOrientationTilt))>{$TILT_WARN}'
               recovery_mode: RECOVERY_EXPRESSION
-              recovery_expression: 'changecount(/NCZ Ubiquiti Wave by SNMPv2/ubntOrientationTilt,3600)=0'
+              recovery_expression: '(max(/NCZ Ubiquiti Wave by SNMPv2/ubntOrientationTilt,3600)-min(/NCZ Ubiquiti Wave by SNMPv2/ubntOrientationTilt,3600))<{$TILT_WARN}'
               name: 'Device tilt has changed by more than {$TILT_WARN} degrees'
               priority: WARNING
               description: 'Will recover after an hour with no further changes'
@@ -846,12 +846,12 @@ zabbix_export:
                   priority: INFO
                   dependencies:
                     - name: 'Station {#STANAME}: No Data Being Received'
-                      expression: 'nodata(/NCZ Ubiquiti Wave by SNMPv2/radio.ubntStaConnTime[{#SNMPINDEX}],60)=1'
+                      expression: 'nodata(/NCZ Ubiquiti Wave by SNMPv2/radio.ubntStaConnTime[{#SNMPINDEX}],120)=1'
                   tags:
                     - tag: scope
                       value: availability
                 - uuid: a3d997bd0b0c4cae8d9fdd00a6dfc11e
-                  expression: 'nodata(/NCZ Ubiquiti Wave by SNMPv2/radio.ubntStaConnTime[{#SNMPINDEX}],60)=1'
+                  expression: 'nodata(/NCZ Ubiquiti Wave by SNMPv2/radio.ubntStaConnTime[{#SNMPINDEX}],120)=1'
                   name: 'Station {#STANAME}: No Data Being Received'
                   priority: AVERAGE
                   dependencies:
@@ -1077,11 +1077,11 @@ zabbix_export:
         - macro: '{$MEMORY_UTIL_MAX}'
           value: '90'
         - macro: '{$ROLL_WARN}'
-          value: '1'
+          value: '2'
         - macro: '{$SNMP_TIMEOUT}'
           value: 3m
         - macro: '{$TILT_WARN}'
-          value: '1'
+          value: '2'
       valuemaps:
         - uuid: b0c5412e2b37434cbdfe57d2632466f3
           name: ubntRadioRole
